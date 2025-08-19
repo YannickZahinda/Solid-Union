@@ -2,41 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* SolidUnion Design System - Colors, gradients, fonts, and animations */
 
 @layer base {
   :root {
+    /* Core Brand Colors - Inspired by Congo's prosperity and unity */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    --foreground: 222 84% 4.9%;
+    
+    /* Congo-inspired palette */
+    --primary: 220 85% 15%; /* Deep blue for trust and stability */
+    --primary-foreground: 0 0% 98%;
+    --primary-glow: 220 85% 25%;
+    
+    --secondary: 46 98% 58%; /* Warm gold for prosperity */
+    --secondary-foreground: 220 85% 15%;
+    
+    --accent: 14 100% 57%; /* Warm orange for energy */
+    --accent-foreground: 0 0% 98%;
+    
+    --success: 142 69% 35%; /* Forest green for growth */
+    --success-foreground: 0 0% 98%;
+    
+    /* Surface Colors */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 222 84% 4.9%;
+    
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
+    --popover-foreground: 222 84% 4.9%;
+    
+    --muted: 220 14% 96%;
+    --muted-foreground: 215 16% 47%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 220 85% 15%;
+    
+    /* Gradients for visual appeal */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(142 69% 45%));
+    --gradient-warm: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--accent)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 50%, hsl(var(--secondary)) 100%);
+    
+    /* Shadows with brand colors */
+    --shadow-primary: 0 10px 30px -10px hsl(var(--primary) / 0.3);
+    --shadow-warm: 0 10px 30px -10px hsl(var(--secondary) / 0.3);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.4);
+    
+    /* Animation variables */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -100,6 +120,55 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer components {
+  /* Hero Button Variants */
+  .btn-hero {
+    @apply bg-[image:var(--gradient-hero)] text-primary-foreground font-semibold px-8 py-4 rounded-lg 
+           shadow-[var(--shadow-primary)] hover:shadow-[var(--shadow-glow)] 
+           transition-[var(--transition-spring)] hover:scale-105 hover:-translate-y-1;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground font-semibold px-8 py-4 rounded-lg
+           shadow-[var(--shadow-warm)] hover:bg-secondary/90
+           transition-[var(--transition-smooth)] hover:scale-105;
+  }
+  
+  .btn-outline {
+    @apply border-2 border-primary text-primary bg-transparent font-semibold px-8 py-4 rounded-lg
+           hover:bg-primary hover:text-primary-foreground
+           transition-[var(--transition-smooth)];
+  }
+
+  /* Card Variants */
+  .card-elevated {
+    @apply bg-card rounded-xl shadow-lg hover:shadow-[var(--shadow-primary)]
+           transition-[var(--transition-smooth)] hover:-translate-y-1;
+  }
+  
+  .card-gradient {
+    @apply bg-[image:var(--gradient-primary)] text-primary-foreground rounded-xl shadow-lg;
+  }
+
+  /* Section Styling */
+  .section-padding {
+    @apply px-4 sm:px-6 lg:px-8 py-16 sm:py-20;
+  }
+  
+  .container-max {
+    @apply max-w-7xl mx-auto;
+  }
+
+  /* Text Gradients */
+  .text-gradient {
+    @apply bg-[image:var(--gradient-hero)] bg-clip-text text-transparent;
+  }
+  
+  .text-gradient-warm {
+    @apply bg-[image:var(--gradient-warm)] bg-clip-text text-transparent;
   }
 }
