@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Search, MapPin } from "lucide-react";
-
+import heroFun from "@/assets/hero-fun.png";
 const HeroSection = () => {
   return (
     <section className="relative overflow-hidden bg-[image:var(--gradient-hero)] text-primary-foreground">
@@ -31,7 +31,7 @@ const HeroSection = () => {
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-10">
               <Link to="/signup">
                 <Button className="btn-secondary px-8 py-4 text-lg">
                   Sign Up Free
@@ -44,6 +44,10 @@ const HeroSection = () => {
                   Explore Listings
                 </Button>
               </Link>
+            </div>
+
+            <div className="mb-16">
+              <img src={heroFun} alt="SolidUnion community and commerce illustration" className="mx-auto w-full max-w-3xl rounded-2xl shadow-[var(--shadow-elegant)]" loading="lazy" />
             </div>
 
             {/* Stats */}

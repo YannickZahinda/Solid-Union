@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Search, User } from "lucide-react";
+import logo from "@/assets/solidunion-logo.png";
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -19,9 +20,7 @@ const Header = () => {
         <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[image:var(--gradient-primary)]">
-              <span className="text-lg font-bold text-primary-foreground">S</span>
-            </div>
+            <img src={logo} alt="SolidUnion logo" className="h-8 w-8 rounded-lg" />
             <span className="text-xl font-bold text-gradient">SolidUnion</span>
           </Link>
 

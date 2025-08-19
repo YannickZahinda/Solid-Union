@@ -97,9 +97,9 @@ const dummyProperties = [
 
 const Properties = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedType, setSelectedType] = useState("");
-  const [priceRange, setPriceRange] = useState("");
-  const [minBedrooms, setMinBedrooms] = useState("");
+  const [selectedType, setSelectedType] = useState("all");
+  const [priceRange, setPriceRange] = useState("any");
+  const [minBedrooms, setMinBedrooms] = useState("any");
 
   const propertyTypes = ["Apartment", "House", "Studio", "Villa", "Commercial", "Shared"];
   const priceRanges = ["Under $400", "$400 - $800", "$800 - $1500", "Over $1500"];
@@ -108,10 +108,10 @@ const Properties = () => {
   const filteredProperties = dummyProperties.filter(property => {
     const matchesSearch = property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          property.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = !selectedType || property.type === selectedType;
+    const matchesType = selectedType === "all" || property.type === selectedType;
     
     let matchesPrice = true;
-    if (priceRange) {
+    if (priceRange && priceRange !== "any") {
       switch (priceRange) {
         case "Under $400":
           matchesPrice = property.price < 400;
@@ -129,7 +129,7 @@ const Properties = () => {
     }
     
     let matchesBedrooms = true;
-    if (minBedrooms) {
+    if (minBedrooms && minBedrooms !== "any") {
       const minBeds = parseInt(minBedrooms.replace("+", ""));
       matchesBedrooms = property.bedrooms >= minBeds;
     }
@@ -170,7 +170,7 @@ const Properties = () => {
                   <SelectValue placeholder="Property Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
                   {propertyTypes.map(type => (
                     <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
@@ -181,7 +181,7 @@ const Properties = () => {
                   <SelectValue placeholder="Price Range" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any Price</SelectItem>
+                  <SelectItem value="any">Any Price</SelectItem>
                   {priceRanges.map(range => (
                     <SelectItem key={range} value={range}>{range}</SelectItem>
                   ))}
@@ -192,7 +192,7 @@ const Properties = () => {
                   <SelectValue placeholder="Bedrooms" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any</SelectItem>
+                  <SelectItem value="any">Any</SelectItem>
                   {bedroomOptions.map(option => (
                     <SelectItem key={option} value={option}>{option} Bedrooms</SelectItem>
                   ))}

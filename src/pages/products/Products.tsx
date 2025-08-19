@@ -79,8 +79,8 @@ const dummyProducts = [
 
 const Products = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [priceRange, setPriceRange] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [priceRange, setPriceRange] = useState("any");
 
   const categories = ["Electronics", "Art & Crafts", "Food & Beverages", "Clothing", "Home & Garden"];
   const priceRanges = ["Under $50", "$50 - $200", "$200 - $500", "Over $500"];
@@ -88,10 +88,10 @@ const Products = () => {
   const filteredProducts = dummyProducts.filter(product => {
     const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || product.category === selectedCategory;
+    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
     
     let matchesPrice = true;
-    if (priceRange) {
+    if (priceRange && priceRange !== "any") {
       switch (priceRange) {
         case "Under $50":
           matchesPrice = product.price < 50;
@@ -144,7 +144,7 @@ const Products = () => {
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Categories</SelectItem>
+                  <SelectItem value="all">All Categories</SelectItem>
                   {categories.map(category => (
                     <SelectItem key={category} value={category}>{category}</SelectItem>
                   ))}
@@ -155,7 +155,7 @@ const Products = () => {
                   <SelectValue placeholder="Price Range" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any Price</SelectItem>
+                  <SelectItem value="any">Any Price</SelectItem>
                   {priceRanges.map(range => (
                     <SelectItem key={range} value={range}>{range}</SelectItem>
                   ))}
