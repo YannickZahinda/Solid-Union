@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,23 +7,44 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
 import Layout from "@/components/layout/Layout";
+import { signup } from "@/services/authService";
+
 
 const Signup = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    fullName: "",
     email: "",
-    phone: "",
+    city: "",
+    phoneNumber: "",
     password: "",
-    confirmPassword: "",
     role: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement signup logic
-    console.log("Signup:", formData);
+    
+    try {
+      const payload = {
+        fullName: formData.fullName,
+        email: formData.email,
+        city: formData.city,
+        phoneNumber: formData.phoneNumber,
+        password: formData.password,
+        role: formData.role
+      };
+
+      const res = await signup(payload);
+
+     alert("Signup successful! You can now log in.");
+      navigate("/login")
+    }catch(error: any){
+      console.error(error.response?.data || error.message);
+      alert("Signup failed. Try again.");
+    }
+
+    
   };
 
   return (
@@ -51,28 +72,18 @@ const Signup = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
+                    <Label htmlFor="firstName">Full Name</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="firstName"
-                        placeholder="First name"
+                        placeholder="Full name"
                         className="pl-10"
-                        value={formData.firstName}
-                        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                        value={formData.fullName}
+                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                         required
                       />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input
-                      id="lastName"
-                      placeholder="Last name"
-                      value={formData.lastName}
-                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                      required
-                    />
                   </div>
                 </div>
 
@@ -91,6 +102,21 @@ const Signup = () => {
                     />
                   </div>
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">City</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="text"
+                      placeholder="Entrer votre ville"
+                      className="pl-10"
+                      value={formData.city}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
@@ -101,24 +127,24 @@ const Signup = () => {
                       type="tel"
                       placeholder="+243 123 456 789"
                       className="pl-10"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      value={formData.phoneNumber}
+                      onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="role">I am a...</Label>
+                  <Label htmlFor="role">I am a...(je suis un....)</Label>
                   <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select your role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="customer">Customer - Looking to buy/rent</SelectItem>
-                      <SelectItem value="seller">Seller - Selling products</SelectItem>
-                      <SelectItem value="landlord">Landlord - Renting properties</SelectItem>
-                      <SelectItem value="admin">Admin - Platform management</SelectItem>
+                      <SelectItem value="acheteur">Acheteur - je cherche a acheter/loger</SelectItem>
+                      <SelectItem value="vendeur">Vendeur - je vend des produits</SelectItem>
+                      <SelectItem value="proprietaire immobilier">Proprietaire - Je possede des propriétés(maisons)</SelectItem>
+                      <SelectItem value="admin">Admin - Je gere la plateforme</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -145,23 +171,6 @@ const Signup = () => {
                     </button>
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      placeholder="Confirm your password"
-                      className="pl-10"
-                      value={formData.confirmPassword}
-                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                      required
-                    />
-                  </div>
-                </div>
-
                 <Button type="submit" className="btn-hero w-full">
                   Create Account
                 </Button>

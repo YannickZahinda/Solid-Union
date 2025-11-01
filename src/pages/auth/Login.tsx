@@ -1,23 +1,39 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import Layout from "@/components/layout/Layout";
+import { login } from "@/services/authService";
+import { useAuth } from "@/context/AuthContext";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement login logic
-    console.log("Login:", formData);
+    
+    try {
+      const payload = {
+        email: formData.email,
+        password: formData.password
+      };
+
+      const res = await login(payload);
+      authLogin(res);
+      navigate("/landlord-dashboard");
+      
+    } catch (error) {
+      
+    }
   };
 
   return (

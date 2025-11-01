@@ -10,6 +10,8 @@ import Products from "./pages/products/Products";
 import Properties from "./pages/properties/Properties";
 import NotFound from "./pages/NotFound";
 import About from "./pages/About";
+import ProtectedRoute from "./components/ProtectedRoute";
+import LandlordDashboard from "./pages/dashboard/LandlordDashboard";
 
 const queryClient = new QueryClient();
 
@@ -18,18 +20,23 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/properties" element={<Properties />} />
-          <Route path="/about" element={<About />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/properties" element={<Properties />} />
+        <Route path="/about" element={<About />} />
+        <Route
+          path="/landlord-dashboard"
+          element={
+            <ProtectedRoute role="proprietaire immobilier">
+              <LandlordDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </TooltipProvider>
   </QueryClientProvider>
 );
