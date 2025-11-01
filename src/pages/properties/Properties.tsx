@@ -152,7 +152,7 @@ const Properties = () => {
           </div>
 
           {/* Search and Filters */}
-          <div className="max-w-5xl mx-auto bg-background/95 backdrop-blur rounded-2xl p-6 shadow-xl">
+          <div className="max-w-5xl mx-auto bg-background/95 backdrop-blur text-black rounded-2xl p-6 shadow-xl">
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div className="md:col-span-2">
                 <div className="relative">
