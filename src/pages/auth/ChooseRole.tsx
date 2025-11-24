@@ -12,7 +12,7 @@ const ChooseRole = () => {
   const saveRole = async (role: string) => {
     setLoading(true);
 
-    const session = await supabase.auth.getSession(); 
+    const session = await supabase.auth.getSession();
     const accessToken = session.data.session?.access_token;
 
     const { data, error } = await supabase.functions.invoke("set-role", {
@@ -22,33 +22,19 @@ const ChooseRole = () => {
       },
     });
 
+    setLoading(false);
+
     if (error) {
       console.error("Error updating role:", error);
-      setLoading(false);
       return;
     }
 
     console.log("Role updated successfully:", data);
 
-    // Wait a bit and verify the role was updated before navigating
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Verify role was saved
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", session.data.session?.user.id)
-      .single();
-
-    console.log("Verified role:", profile?.role);
-
-    setLoading(false);
-
-    // Redirect after role set
+    // Redirect immediately after successful update
     if (role === "buyer") navigate("/buyer-dashboard");
     else if (role === "seller") navigate("/seller-dashboard");
     else if (role === "admin") navigate("/admin-dashboard");
-    else if (role === "proprietaire immobilier") navigate("/landlord-dashboard");
   };
 
   return (
@@ -63,11 +49,11 @@ const ChooseRole = () => {
           <select
             className="w-full border rounded-md p-2"
             onChange={(e) => setSelectedRole(e.target.value)}
+            value={selectedRole}
           >
             <option value="">-- Select Role --</option>
-            <option value="buyer">Acheteur</option>
-            <option value="seller">Vendeur</option>
-            <option value="proprietaire immobilier">Propriétaire Immobilier</option>
+            <option value="buyer">Acheteur (Buyer)</option>
+            <option value="seller">Vendeur / Propriétaire (Seller)</option>
             <option value="admin">Admin</option>
           </select>
 
