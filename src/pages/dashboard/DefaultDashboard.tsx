@@ -1,38 +1,59 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/services/supabase";
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/services/supabase';
 
 const DefaultDashboard = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkRole = async () => {
-      const user = supabase.auth.getUser(); // returns a promise
-      const { data: userData } = await user;
-
-      if (!userData.user) {
-        navigate("/login");
+    const redirectToDashboard = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate('/login');
         return;
       }
 
-      // Fetch profile
       const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", userData.user.id)
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
         .single();
 
-      if (!profile || profile.role === "none") {
-        navigate("/choose-role");
-      } else if (profile.role === "buyer") navigate("/buyer-dashboard");
-      else if (profile.role === "seller") navigate("/seller-dashboard");
-      else if (profile.role === "admin") navigate("/admin-dashboard");
+      if (!profile || !profile.role) {
+        navigate('/choose-role');
+        return;
+      }
+
+      // Redirect based on role
+      switch (profile.role) {
+        case 'buyer':
+          navigate('/buyer-dashboard');
+          break;
+        case 'seller':
+          navigate('/seller-dashboard');
+          break;
+        case 'admin':
+          navigate('/admin-dashboard');
+          break;
+        default:
+          navigate('/choose-role');
+      }
     };
 
-    checkRole();
-  }, []);
+    redirectToDashboard();
+  }, [navigate]);
 
-  return <div>Loading dashboard...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+
+  return null;
 };
 
 export default DefaultDashboard;

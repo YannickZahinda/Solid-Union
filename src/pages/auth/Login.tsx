@@ -17,6 +17,7 @@ import { supabase } from "@/services/supabase";
 const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -24,13 +25,21 @@ const Login = () => {
 
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
+  setLoading(true);
+  
   const { email, password } = formData;
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return alert(error.message);
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  
+  setLoading(false);
+  
+  if (error) {
+    alert(error.message);
+    return;
+  }
 
-  // Navigate to default dashboard
-  navigate("/choose-role");
+  // Just navigate to dashboard - ProtectedRoute will handle the rest
+  navigate("/dashboard");
 };
 
 
@@ -142,3 +151,5 @@ const handleSubmit = async (e: React.FormEvent) => {
 };
 
 export default Login;
+
+
