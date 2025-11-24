@@ -2,7 +2,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
+
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
@@ -10,8 +11,16 @@ import Products from "./pages/products/Products";
 import Properties from "./pages/properties/Properties";
 import NotFound from "./pages/NotFound";
 import About from "./pages/About";
+
 import ProtectedRoute from "./components/ProtectedRoute";
+
+// Role pages
 import LandlordDashboard from "./pages/dashboard/LandlordDashboard";
+import BuyerDashboard from "./pages/dashboard/BuyerDashboard";
+import SellerDashboard from "./pages/dashboard/SellerDashboard";
+import AdminDashboard from "./pages/dashboard/AdminDashboard";
+import ChooseRole from "./pages/auth/ChooseRole";
+import DefaultDashboard from "./pages/dashboard/DefaultDashboard";
 
 const queryClient = new QueryClient();
 
@@ -24,9 +33,52 @@ const App = () => (
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+
         <Route path="/products" element={<Products />} />
         <Route path="/properties" element={<Properties />} />
         <Route path="/about" element={<About />} />
+
+        {/* Role Setup */}
+        <Route path="/choose-role" element={<ChooseRole />} />
+
+        {/* Default role-based redirect */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DefaultDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Real dashboards */}
+        <Route
+          path="/buyer-dashboard"
+          element={
+            <ProtectedRoute role="buyer">
+              <BuyerDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/seller-dashboard"
+          element={
+            <ProtectedRoute role="seller">
+              <SellerDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin-dashboard"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/landlord-dashboard"
           element={
@@ -35,6 +87,7 @@ const App = () => (
             </ProtectedRoute>
           }
         />
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </TooltipProvider>

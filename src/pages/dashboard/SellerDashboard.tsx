@@ -1,21 +1,29 @@
 import { useEffect, useState } from "react";
-import { getAllProducts, addProduct } from "@/services/productService";
+import { supabase } from "@/services/supabase";
 
 const SellerDashboard = () => {
-  const [products, setProducts] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
-    getAllProducts().then(setProducts);
+    const loadProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      setProfile(data);
+    };
+
+    loadProfile();
   }, []);
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">My Products</h1>
-      <ul>
-        {products.map((p) => (
-          <li key={p._id}>{p.title} - ${p.price}</li>
-        ))}
-      </ul>
+      <h1 className="text-2xl font-bold">Seller Dashboard</h1>
+      <p>Welcome {profile?.full_name}</p>
     </div>
   );
 };

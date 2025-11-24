@@ -4,47 +4,47 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
 import Layout from "@/components/layout/Layout";
-import { signup } from "@/services/authService";
+import { supabase } from "@/services/supabase";
 
 
 const Signup = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     city: "",
     phoneNumber: "",
     password: "",
-    role: ""
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    try {
-      const payload = {
-        fullName: formData.fullName,
-        email: formData.email,
-        city: formData.city,
-        phoneNumber: formData.phoneNumber,
-        password: formData.password,
-        role: formData.role
-      };
 
-      const res = await signup(payload);
+    const { fullName, email, city, phoneNumber, password } = formData;
 
-     alert("Signup successful! You can now log in.");
-      navigate("/login")
-    }catch(error: any){
-      console.error(error.response?.data || error.message);
-      alert("Signup failed. Try again.");
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          city,
+          phone: phoneNumber,
+        },
+      },
+    });
+
+    if (error) {
+      alert(error.message);
+      return;
     }
 
-    
+    alert("Signup successful! Please login.");
+    navigate("/login");
   };
 
   return (
@@ -64,26 +64,24 @@ const Signup = () => {
           <Card className="card-elevated">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-bold">Join SolidUnion</CardTitle>
-              <CardDescription>
-                Create your account and start connecting
-              </CardDescription>
+              <CardDescription>Create your account to get started</CardDescription>
             </CardHeader>
+
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">Full Name</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="firstName"
-                        placeholder="Full name"
-                        className="pl-10"
-                        value={formData.fullName}
-                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                        required
-                      />
-                    </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="fullName"
+                      placeholder="Full name"
+                      className="pl-10"
+                      value={formData.fullName}
+                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      required
+                    />
                   </div>
                 </div>
 
@@ -102,14 +100,15 @@ const Signup = () => {
                     />
                   </div>
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="email">City</Label>
+                  <Label htmlFor="city">City</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
-                      id="email"
+                      id="city"
                       type="text"
-                      placeholder="Entrer votre ville"
+                      placeholder="Your city"
                       className="pl-10"
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
@@ -135,21 +134,6 @@ const Signup = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="role">I am a...(je suis un....)</Label>
-                  <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="acheteur">Acheteur - je cherche a acheter/loger</SelectItem>
-                      <SelectItem value="vendeur">Vendeur - je vend des produits</SelectItem>
-                      <SelectItem value="proprietaire immobilier">Proprietaire - Je possede des propriétés(maisons)</SelectItem>
-                      <SelectItem value="admin">Admin - Je gere la plateforme</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -171,6 +155,7 @@ const Signup = () => {
                     </button>
                   </div>
                 </div>
+
                 <Button type="submit" className="btn-hero w-full">
                   Create Account
                 </Button>
@@ -181,6 +166,7 @@ const Signup = () => {
                     Sign in
                   </Link>
                 </div>
+
               </form>
             </CardContent>
           </Card>

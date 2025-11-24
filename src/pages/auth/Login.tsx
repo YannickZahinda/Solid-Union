@@ -3,38 +3,36 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import Layout from "@/components/layout/Layout";
-import { login } from "@/services/authService";
-import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/services/supabase";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login: authLogin } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
-    password: ""
+    password: "",
   });
 
-  const handleSubmit = async(e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      const payload = {
-        email: formData.email,
-        password: formData.password
-      };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  const { email, password } = formData;
 
-      const res = await login(payload);
-      authLogin(res);
-      navigate("/landlord-dashboard");
-      
-    } catch (error) {
-      
-    }
-  };
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) return alert(error.message);
+
+  // Navigate to default dashboard
+  navigate("/choose-role");
+};
+
 
   return (
     <Layout showFooter={false}>
@@ -44,9 +42,13 @@ const Login = () => {
           <div className="text-center mb-8">
             <Link to="/" className="inline-flex items-center space-x-2">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[image:var(--gradient-primary)]">
-                <span className="text-xl font-bold text-primary-foreground">S</span>
+                <span className="text-xl font-bold text-primary-foreground">
+                  S
+                </span>
               </div>
-              <span className="text-2xl font-bold text-gradient">SolidUnion</span>
+              <span className="text-2xl font-bold text-gradient">
+                SolidUnion
+              </span>
             </Link>
           </div>
 
@@ -69,7 +71,9 @@ const Login = () => {
                       placeholder="Enter your email"
                       className="pl-10"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
                       required
                     />
                   </div>
@@ -85,7 +89,9 @@ const Login = () => {
                       placeholder="Enter your password"
                       className="pl-10 pr-10"
                       value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, password: e.target.value })
+                      }
                       required
                     />
                     <button
@@ -93,13 +99,20 @@ const Login = () => {
                       className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-primary hover:underline"
+                  >
                     Forgot password?
                   </Link>
                 </div>
@@ -109,8 +122,13 @@ const Login = () => {
                 </Button>
 
                 <div className="text-center text-sm">
-                  <span className="text-muted-foreground">Don't have an account? </span>
-                  <Link to="/signup" className="text-primary hover:underline font-medium">
+                  <span className="text-muted-foreground">
+                    Don't have an account?{" "}
+                  </span>
+                  <Link
+                    to="/signup"
+                    className="text-primary hover:underline font-medium"
+                  >
                     Sign up
                   </Link>
                 </div>

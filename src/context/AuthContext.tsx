@@ -1,4 +1,3 @@
-import { LoginResponse } from "@/services/authService";
 import React, {
   createContext,
   useContext,
@@ -6,91 +5,60 @@ import React, {
   ReactNode,
   useEffect,
 } from "react";
-
-interface User {
-  id: string;
-  fullName: string;
-  email: string;
-  role: string;
-  accessToken: string;
-  //   properties?: any;
-  //   products?: any;
-}
+import { supabase } from "@/services/supabase";
 
 interface AuthContextType {
-  user: User | null;
-  login: (response: LoginResponse) => void;
-  logout: () => void;
+  user: any | null;
+  loading: boolean;
   isAuthenticated: () => boolean;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  // Load session on page load
   useEffect(() => {
-    const token = localStorage.getItem("jwtToken");
-    console.log(
-      "Initial auth check - Access token: ",
-      token ? "exists" : "not found"
-    );
-    if (token) {
-      try {
-        const decoded = JSON.parse(atob(token.split(".")[1]));
-        if (decoded.exp * 1000 < Date.now()) {
-          setUser(null);
-        } else {
-          setUser({
-            id: decoded.id,
-            fullName: decoded.fullName,
-            email: decoded.email,
-            role: decoded.role,
-            accessToken: token,
-          });
-        }
-      } catch (error) {
-        console.error("Invalid token:", error);
-        setUser(null);
-        localStorage.removeItem("jwtToken");
-      }
-    }
+    const getSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      setUser(session?.user ?? null);
+      setLoading(false);
+    };
+
+    getSession();
+
+    // Listen for auth changes (login, logout)
+    const {
+      data: authListener,
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => authListener.subscription.unsubscribe();
   }, []);
 
+  const isAuthenticated = () => !!user;
 
-  const login = (response: LoginResponse) => {
-    localStorage.setItem("jwtToken", response.access_token);
-    const token = response.access_token;
-    const decoded = JSON.parse(atob(token.split(".")[1]));
-    setUser({
-      id: decoded.sub,
-      fullName: decoded.fullName,
-      email: decoded.email,
-      role: decoded.role,
-      accessToken: token,
-    });
-  };
-
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem("jwtToken");
-  };
-
-  const isAuthenticated = () => {
-    return user !== null;
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated }}>
-      {children}
+    <AuthContext.Provider value={{ user, loading, isAuthenticated, logout }}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = (): AuthContextType => {
+export const useAuth = () => {
   const ctx = useContext(AuthContext);
-  if (!ctx) {
-    throw new Error("useAuth must be used inside an AuthProvider");
-  }
+  if (!ctx) throw new Error("useAuth must be used inside an AuthProvider");
   return ctx;
 };
