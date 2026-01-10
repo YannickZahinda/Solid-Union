@@ -38,8 +38,22 @@ const handleSubmit = async (e: React.FormEvent) => {
     return;
   }
 
-  // Just navigate to dashboard - ProtectedRoute will handle the rest
-  navigate("/dashboard");
+  // Check profile completion
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('completion_percentage')
+      .eq('id', user.id)
+      .single();
+
+    // Redirect to complete profile if less than 70% complete
+    if (profile && profile.completion_percentage < 70) {
+      navigate('/complete-profile');
+    } else {
+      navigate('/dashboard');
+    }
+  }
 };
 
 

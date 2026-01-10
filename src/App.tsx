@@ -14,13 +14,13 @@ import About from "./pages/About";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
-// Role pages
-import LandlordDashboard from "./pages/dashboard/LandlordDashboard";
-import BuyerDashboard from "./pages/dashboard/BuyerDashboard";
-import SellerDashboard from "./pages/dashboard/SellerDashboard";
-import AdminDashboard from "./pages/dashboard/AdminDashboard";
-import ChooseRole from "./pages/auth/ChooseRole";
-import DefaultDashboard from "./pages/dashboard/DefaultDashboard";
+// Updated pages
+import Dashboard from "./pages/dashboard/Dashboard";
+import CompleteProfile from "./pages/auth/CompleteProfile";
+import CreateListing from "./pages/listing/CreateListing";
+import MyListings from "./pages/listing/MyListings";
+import Messages from "./pages/messages/Messages";
+import Profile from "./pages/profile/Profile";
 
 const queryClient = new QueryClient();
 
@@ -30,60 +30,65 @@ const App = () => (
       <Toaster />
       <Sonner />
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-
         <Route path="/products" element={<Products />} />
         <Route path="/properties" element={<Properties />} />
         <Route path="/about" element={<About />} />
 
-        {/* Role Setup */}
-        <Route path="/choose-role" element={<ChooseRole />} />
-
-        {/* Default role-based redirect */}
+        {/* Protected Routes */}
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
-              <DefaultDashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Real dashboards */}
-        <Route
-          path="/buyer-dashboard"
-          element={
-            <ProtectedRoute role="buyer">
-              <BuyerDashboard />
+            <ProtectedRoute requireProfileComplete={true}>
+              <Dashboard />
             </ProtectedRoute>
           }
         />
 
         <Route
-          path="/seller-dashboard"
+          path="/complete-profile"
           element={
-            <ProtectedRoute role="seller">
-              <SellerDashboard />
+            <ProtectedRoute requireProfileComplete={false}>
+              <CompleteProfile />
             </ProtectedRoute>
           }
         />
 
         <Route
-          path="/admin-dashboard"
+          path="/create-listing"
           element={
-            <ProtectedRoute role="admin">
-              <AdminDashboard />
+            <ProtectedRoute requireProfileComplete={true}>
+              <CreateListing />
             </ProtectedRoute>
           }
         />
 
         <Route
-          path="/landlord-dashboard"
+          path="/my-listings"
           element={
-            <ProtectedRoute role="proprietaire immobilier">
-              <LandlordDashboard />
+            <ProtectedRoute requireProfileComplete={true}>
+              <MyListings />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute requireProfileComplete={true}>
+              <Messages />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute requireProfileComplete={true}>
+              <Profile />
             </ProtectedRoute>
           }
         />

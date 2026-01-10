@@ -1,25 +1,60 @@
-import { Navigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+import { ReactNode, useEffect, useState } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { supabase } from '@/services/supabase';
 
-const ProtectedRoute = ({
-  children,
-  role,
-}: {
-  children: JSX.Element;
-  role?: "admin";
-}) => {
-  const { user, loading } = useAuth();
+interface ProtectedRouteProps {
+  children: ReactNode;
+  requireProfileComplete?: boolean;
+}
 
-  if (loading) return <div>Loading...</div>;
+const ProtectedRoute = ({ children, requireProfileComplete = true }: ProtectedRouteProps) => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [profileComplete, setProfileComplete] = useState(false);
 
-  if (!user) return <Navigate to="/login" replace />;
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate('/login');
+        return;
+      }
 
-  // Only admin routes need checking
-  if (role === "admin" && user.app_metadata?.role !== "admin") {
-    return <Navigate to="/unauthorized" replace />;
+      setIsAuthenticated(true);
+
+      // Check profile completion
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('completion_percentage')
+        .eq('id', user.id)
+        .single();
+
+      const isComplete = profile?.completion_percentage >= 70; // 70% threshold
+      setProfileComplete(isComplete);
+
+      // Redirect to complete profile if needed
+      if (requireProfileComplete && !isComplete) {
+        navigate('/complete-profile');
+        return;
+      }
+
+      setLoading(false);
+    };
+
+    checkAuth();
+  }, [navigate, requireProfileComplete]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
   }
 
-  return children;
+  return isAuthenticated ? <>{children}</> : null;
 };
 
 export default ProtectedRoute;
