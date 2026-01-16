@@ -28,6 +28,7 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminListings from "./pages/AdminListings";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminSettings from "./pages/AdminSettings";
+import Recommendations from "./pages/Recommandations";
 
 const queryClient = new QueryClient();
 
@@ -142,6 +143,14 @@ const App = () => (
           element={
             <ProtectedRoute requireAdmin={true}>
               <AdminSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/recommendations"
+          element={
+            <ProtectedRoute requireProfileComplete={true}>
+              <Recommendations />
             </ProtectedRoute>
           }
         />
