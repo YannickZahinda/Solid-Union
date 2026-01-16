@@ -195,54 +195,53 @@ const Profile = () => {
     }
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+ const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !profile) return;
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user.id}/avatar.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+        const fileExt = file.name.split(".").pop();
+        // SIMPLIFIED PATH - don't include "avatars/" prefix
+        const fileName = `${user.id}/avatar.${fileExt}`;
+        
+        // Upload to Supabase Storage (use fileName directly, not filePath)
+        const { error: uploadError } = await supabase.storage
+            .from("avatars")
+            .upload(fileName, file, { upsert: true });
 
-      // Upload to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file, { upsert: true });
+        if (uploadError) throw uploadError;
 
-      if (uploadError) throw uploadError;
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+            .from("avatars")
+            .getPublicUrl(fileName);
 
-      // Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(filePath);
+        // Update profile with new avatar URL
+        const { error: updateError } = await supabase
+            .from("profiles")
+            .update({ avatar_url: publicUrl })
+            .eq("id", user.id);
 
-      // Update profile with new avatar URL
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({ avatar_url: publicUrl })
-        .eq("id", user.id);
+        if (updateError) throw updateError;
 
-      if (updateError) throw updateError;
+        setProfile(prev => prev ? { ...prev, avatar_url: publicUrl } : null);
 
-      setProfile((prev) => (prev ? { ...prev, avatar_url: publicUrl } : null));
-
-      toast({
-        title: "Avatar updated",
-        description: "Your profile picture has been updated.",
-      });
+        toast({
+            title: "Avatar mis à jour",
+            description: "Votre photo de profil a été mise à jour.",
+        });
     } catch (error: any) {
-      toast({
-        title: "Error uploading avatar",
-        description: error.message,
-        variant: "destructive",
-      });
+        console.error('Avatar upload error:', error);
+        toast({
+            title: "Erreur de téléchargement",
+            description: error.message || "Impossible de télécharger l'avatar",
+            variant: "destructive",
+        });
     }
-  };
+};
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

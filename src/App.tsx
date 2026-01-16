@@ -14,13 +14,20 @@ import About from "./pages/About";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
-// Updated pages
+// Pages utilisateur
 import Dashboard from "./pages/dashboard/Dashboard";
 import CompleteProfile from "./pages/auth/CompleteProfile";
 import CreateListing from "./pages/listing/CreateListing";
 import MyListings from "./pages/listing/MyListings";
 import Messages from "./pages/messages/Messages";
 import Profile from "./pages/profile/Profile";
+
+// Pages administrateur
+import AdminDashboard from "./pages/dashboard/AdminDashboard";
+import AdminUsers from "./pages/AdminUsers";
+import AdminListings from "./pages/AdminListings";
+import AdminAnalytics from "./pages/AdminAnalytics";
+import AdminSettings from "./pages/AdminSettings";
 
 const queryClient = new QueryClient();
 
@@ -30,7 +37,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <Routes>
-        {/* Public Routes */}
+        {/* Routes publiques */}
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
@@ -38,7 +45,7 @@ const App = () => (
         <Route path="/properties" element={<Properties />} />
         <Route path="/about" element={<About />} />
 
-        {/* Protected Routes */}
+        {/* Routes protégées - Utilisateurs */}
         <Route
           path="/dashboard"
           element={
@@ -89,6 +96,52 @@ const App = () => (
           element={
             <ProtectedRoute requireProfileComplete={true}>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Routes protégées - Administrateur */}
+        <Route
+          path="/admin-dashboard"
+          element={
+            <ProtectedRoute requireProfileComplete={true} requireAdmin={true}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute requireAdmin={true}>
+              <AdminUsers />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/listings"
+          element={
+            <ProtectedRoute requireAdmin={true}>
+              <AdminListings />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/analytics"
+          element={
+            <ProtectedRoute requireAdmin={true}>
+              <AdminAnalytics />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/settings"
+          element={
+            <ProtectedRoute requireAdmin={true}>
+              <AdminSettings />
             </ProtectedRoute>
           }
         />
