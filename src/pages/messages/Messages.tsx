@@ -23,6 +23,8 @@ import {
   Smile,
   Paperclip,
   Mic,
+  Menu,
+  X,
 } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { supabase } from "@/services/supabase";
@@ -67,7 +69,31 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [showConversationList, setShowConversationList] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatAreaRef = useRef<HTMLDivElement>(null);
+
+  // Detect mobile screen
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) {
+        setShowConversationList(true);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Auto-hide conversation list on mobile when selecting a conversation
+  useEffect(() => {
+    if (isMobile && selectedConversation) {
+      setShowConversationList(false);
+    }
+  }, [selectedConversation, isMobile]);
 
   useEffect(() => {
     fetchCurrentUser();
@@ -329,6 +355,19 @@ const Messages = () => {
     return conversations.find((c) => c.id === conversationId)?.other_user;
   };
 
+  const toggleConversationList = () => {
+    setShowConversationList(!showConversationList);
+  };
+
+  const handleBackToConversations = () => {
+    if (isMobile) {
+      setSelectedConversation(null);
+      setShowConversationList(true);
+    } else {
+      setSelectedConversation(null);
+    }
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -340,38 +379,105 @@ const Messages = () => {
   }
 
   return (
-    <Layout>
-      <div className="h-[calc(100vh-4rem)]">
+    <Layout showFooter={!selectedConversation || !isMobile}>
+      <div className="h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)]">
+        {/* Mobile Header */}
+        {isMobile && (
+          <div className="md:hidden bg-gradient-to-r from-blue-50 to-indigo-50 border-b px-4 py-3 flex items-center justify-between">
+            {selectedConversation && !showConversationList ? (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleBackToConversations}
+                  className="h-10 w-10"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage
+                      src={
+                        getConversationUser(selectedConversation)?.avatar_url
+                      }
+                    />
+                    <AvatarFallback>
+                      {getConversationUser(
+                        selectedConversation
+                      )?.full_name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="font-medium text-sm">
+                    {getConversationUser(selectedConversation)?.full_name}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowConversationList(true)}
+                  className="h-10 w-10"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </>
+            ) : (
+              <>
+                <h1 className="font-bold text-lg">Messages</h1>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowConversationList(false)}
+                  className="h-10 w-10"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </>
+            )}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 h-full">
           {/* Conversations List */}
           <div
-            className={`border-r border-gray-200 ${
-              selectedConversation ? "hidden md:block" : "block"
-            }`}
+            className={`${
+              isMobile ? (showConversationList ? "block" : "hidden") : "block"
+            } md:block border-r border-gray-200 h-full`}
           >
-            <Card className="h-full rounded-none border-0 shadow-sm">
-              <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+            <Card className="h-full rounded-none border-0 shadow-sm md:shadow-none">
+              <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-indigo-50 md:bg-transparent">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl font-bold text-gray-800">
+                  <CardTitle className="text-xl font-bold text-gray-800 hidden md:block">
                     Messages
                   </CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="hover:bg-white/50"
-                  >
-                    <MoreVertical className="h-5 w-5 text-gray-600" />
-                  </Button>
-                </div>
-                <div className="relative mt-4">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search conversations..."
-                    className="pl-10 bg-white border-gray-300 focus:border-blue-500"
-                  />
+                  <div className="flex items-center gap-2 w-full md:w-auto">
+                    {isMobile && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowConversationList(false)}
+                        className="md:hidden"
+                      >
+                        <X className="h-5 w-5" />
+                      </Button>
+                    )}
+                    <div className="relative flex-1 md:flex-none">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        placeholder="Search conversations..."
+                        className="pl-10 bg-white border-gray-300 focus:border-blue-500 w-full md:w-64"
+                      />
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="hidden md:flex hover:bg-white/50"
+                    >
+                      <MoreVertical className="h-5 w-5 text-gray-600" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
-              <ScrollArea className="h-[calc(100vh-12rem)]">
+              <ScrollArea className="h-[calc(100vh-10rem)] md:h-[calc(100vh-12rem)]">
                 <CardContent className="p-0">
                   {conversations.map((conversation) => (
                     <div
@@ -384,6 +490,9 @@ const Messages = () => {
                       onClick={() => {
                         setSelectedConversation(conversation.id);
                         fetchMessages(conversation.id);
+                        if (isMobile) {
+                          setShowConversationList(false);
+                        }
                       }}
                     >
                       <div className="flex items-start gap-3">
@@ -404,7 +513,7 @@ const Messages = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <h4 className="font-semibold truncate text-gray-800">
+                            <h4 className="font-semibold truncate text-gray-800 text-sm md:text-base">
                               {conversation.other_user.full_name}
                             </h4>
                             <span className="text-xs text-gray-500">
@@ -427,7 +536,9 @@ const Messages = () => {
                                   ) : (
                                     <Home className="h-3 w-3 mr-1" />
                                   )}
-                                  {conversation.listing_title}
+                                  <span className="truncate max-w-[120px] md:max-w-[150px]">
+                                    {conversation.listing_title}
+                                  </span>
                                 </span>
                               </Badge>
                             </div>
@@ -443,42 +554,47 @@ const Messages = () => {
 
           {/* Chat Area */}
           <div
-            className={`col-span-2 ${
-              selectedConversation ? "block" : "hidden md:block"
-            }`}
+            className={`${
+              isMobile
+                ? selectedConversation && !showConversationList
+                  ? "block"
+                  : "hidden"
+                : "block"
+            } md:block col-span-1 md:col-span-2 h-full`}
+            ref={chatAreaRef}
           >
             {selectedConversation ? (
-              <Card className="h-full rounded-none border-0 flex flex-col shadow-sm">
-                {/* Chat Header */}
-                <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-indigo-50 p-4">
-                  <div className="flex items-center justify-between">
+              <Card className="h-full rounded-none border-0 shadow-sm md:shadow-none flex flex-col">
+                {/* Chat Header - Desktop */}
+                <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-indigo-50 p-3 md:p-4 hidden md:flex">
+                  <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-3">
                       <Button
                         variant="ghost"
                         size="icon"
                         className="md:hidden hover:bg-white/50"
-                        onClick={() => setSelectedConversation(null)}
+                        onClick={handleBackToConversations}
                       >
                         <ChevronLeft className="h-5 w-5 text-gray-600" />
                       </Button>
-                      <Avatar className="border-2 border-white shadow-md">
+                      <Avatar className="border-2 border-white shadow-md h-10 w-10 md:h-12 md:w-12">
                         <AvatarImage
                           src={
                             getConversationUser(selectedConversation)
                               ?.avatar_url
                           }
                         />
-                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-sm md:text-base">
                           {getConversationUser(
                             selectedConversation
                           )?.full_name.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <CardTitle className="text-lg font-bold text-gray-800">
+                        <CardTitle className="text-base md:text-lg font-bold text-gray-800">
                           {getConversationUser(selectedConversation)?.full_name}
                         </CardTitle>
-                        <p className="text-sm text-green-600 flex items-center gap-1">
+                        <p className="text-xs md:text-sm text-green-600 flex items-center gap-1">
                           <span className="h-2 w-2 bg-green-500 rounded-full"></span>
                           Online
                         </p>
@@ -488,41 +604,41 @@ const Messages = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="hover:bg-white/50"
+                        className="h-9 w-9 md:h-10 md:w-10 hover:bg-white/50"
                       >
-                        <Phone className="h-5 w-5 text-gray-600" />
+                        <Phone className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="hover:bg-white/50"
+                        className="h-9 w-9 md:h-10 md:w-10 hover:bg-white/50"
                       >
-                        <Video className="h-5 w-5 text-gray-600" />
+                        <Video className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="hover:bg-white/50"
+                        className="h-9 w-9 md:h-10 md:w-10 hover:bg-white/50"
                       >
-                        <Info className="h-5 w-5 text-gray-600" />
+                        <Info className="h-4 w-4 md:h-5 md:w-5 text-gray-600" />
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
 
                 {/* Messages Area */}
-                <div className="flex-1 bg-gradient-to-b from-gray-50/50 to-white">
-                  <ScrollArea className="h-full p-6">
-                    <div className="space-y-6">
+                <div className="flex-1 bg-gradient-to-b from-gray-50/50 to-white overflow-hidden">
+                  <ScrollArea className="h-full p-3 md:p-6">
+                    <div className="space-y-3 md:space-y-6">
                       {messages.length === 0 ? (
-                        <div className="text-center py-12">
-                          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
-                            <Send className="h-10 w-10 text-blue-600" />
+                        <div className="text-center py-8 md:py-12">
+                          <div className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
+                            <Send className="h-8 w-8 md:h-10 md:w-10 text-blue-600" />
                           </div>
-                          <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                          <h3 className="text-base md:text-lg font-semibold text-gray-700 mb-2">
                             No messages yet
                           </h3>
-                          <p className="text-gray-500 max-w-sm mx-auto">
+                          <p className="text-sm md:text-base text-gray-500 max-w-sm mx-auto px-4">
                             Start the conversation by sending your first message
                           </p>
                         </div>
@@ -539,14 +655,14 @@ const Messages = () => {
                               } animate-in fade-in duration-300`}
                             >
                               <div
-                                className={`flex max-w-[80%] ${
+                                className={`flex max-w-[90%] md:max-w-[80%] ${
                                   isCurrentUser ? "flex-row-reverse" : ""
                                 }`}
                               >
                                 {/* Avatar (only for received messages) */}
                                 {!isCurrentUser && (
-                                  <div className="flex-shrink-0 mr-3 mt-1">
-                                    <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
+                                  <div className="flex-shrink-0 mr-2 md:mr-3 mt-1">
+                                    <Avatar className="h-7 w-7 md:h-8 md:w-8 border-2 border-white shadow-sm">
                                       <AvatarImage
                                         src={
                                           getConversationUser(
@@ -581,20 +697,20 @@ const Messages = () => {
                                   )}
 
                                   <div
-                                    className={`relative rounded-2xl px-4 py-3 shadow-sm max-w-full ${
+                                    className={`relative rounded-xl md:rounded-2xl px-3 py-2 md:px-4 md:py-3 shadow-sm max-w-full ${
                                       isCurrentUser
-                                        ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-br-none"
-                                        : "bg-gradient-to-br from-gray-100 to-white text-gray-800 rounded-bl-none border border-gray-200"
+                                        ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-br-none md:rounded-br-none"
+                                        : "bg-gradient-to-br from-gray-100 to-white text-gray-800 rounded-bl-none md:rounded-bl-none border border-gray-200"
                                     }`}
                                   >
                                     {/* Message content */}
-                                    <p className="break-words">
+                                    <p className="break-words text-sm md:text-base">
                                       {message.content}
                                     </p>
 
                                     {/* Timestamp and read status */}
                                     <div
-                                      className={`flex items-center justify-end gap-2 mt-2 text-xs ${
+                                      className={`flex items-center justify-end gap-1 md:gap-2 mt-1 md:mt-2 text-xs ${
                                         isCurrentUser
                                           ? "text-blue-100"
                                           : "text-gray-500"
@@ -620,7 +736,7 @@ const Messages = () => {
                                       }`}
                                     >
                                       <div
-                                        className={`w-3 h-3 ${
+                                        className={`w-2 h-2 md:w-3 md:h-3 ${
                                           isCurrentUser
                                             ? "bg-gradient-to-br from-blue-500 to-blue-600"
                                             : "bg-gradient-to-br from-gray-100 to-white border-r border-b border-gray-200"
@@ -637,8 +753,8 @@ const Messages = () => {
 
                                 {/* Avatar for sent messages */}
                                 {isCurrentUser && (
-                                  <div className="flex-shrink-0 ml-3 mt-1">
-                                    <Avatar className="h-8 w-8 border-2 border-white shadow-sm">
+                                  <div className="flex-shrink-0 ml-2 md:ml-3 mt-1">
+                                    <Avatar className="h-7 w-7 md:h-8 md:w-8 border-2 border-white shadow-sm">
                                       <AvatarFallback className="bg-gradient-to-br from-green-400 to-green-600 text-white text-xs">
                                         You
                                       </AvatarFallback>
@@ -656,21 +772,21 @@ const Messages = () => {
                 </div>
 
                 {/* Message Input */}
-                <div className="border-t border-gray-200 bg-white p-4">
+                <div className="border-t border-gray-200 bg-white p-3 md:p-4">
                   <div className="flex items-end gap-2">
                     {/* Attachment buttons */}
                     <div className="flex gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-10 w-10 rounded-full"
+                        className="h-9 w-9 md:h-10 md:w-10 rounded-full"
                       >
                         <Paperclip className="h-4 w-4 text-gray-500" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-10 w-10 rounded-full"
+                        className="h-9 w-9 md:h-10 md:w-10 rounded-full"
                       >
                         <Smile className="h-4 w-4 text-gray-500" />
                       </Button>
@@ -682,7 +798,7 @@ const Messages = () => {
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Type your message..."
-                        className="pr-12 pl-4 py-6 rounded-2xl border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        className="pr-10 md:pr-12 pl-3 md:pl-4 py-4 md:py-6 rounded-xl md:rounded-2xl border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm md:text-base"
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault();
@@ -693,9 +809,9 @@ const Messages = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8"
+                        className="absolute right-1 md:right-2 top-1/2 transform -translate-y-1/2 h-7 w-7 md:h-8 md:w-8"
                       >
-                        <Mic className="h-4 w-4 text-gray-500" />
+                        <Mic className="h-3 w-3 md:h-4 md:w-4 text-gray-500" />
                       </Button>
                     </div>
 
@@ -703,9 +819,9 @@ const Messages = () => {
                     <Button
                       onClick={sendMessage}
                       disabled={!newMessage.trim()}
-                      className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <Send className="h-5 w-5" />
+                      <Send className="h-4 w-4 md:h-5 md:w-5" />
                     </Button>
                   </div>
 
@@ -726,7 +842,7 @@ const Messages = () => {
                           style={{ animationDelay: "300ms" }}
                         ></div>
                       </div>
-                      <span>
+                      <span className="truncate">
                         {getConversationUser(selectedConversation)?.full_name}{" "}
                         is typing...
                       </span>
@@ -735,22 +851,22 @@ const Messages = () => {
                 </div>
               </Card>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center p-8 bg-gradient-to-b from-gray-50 to-white">
-                <div className="w-40 h-40 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center mb-8 shadow-lg">
-                  <Send className="h-20 w-20 text-blue-600" />
+              <div className="h-full flex flex-col items-center justify-center p-4 md:p-8 bg-gradient-to-b from-gray-50 to-white">
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center mb-6 md:mb-8 shadow-lg">
+                  <Send className="h-16 w-16 md:h-20 md:w-20 text-blue-600" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-3 text-center">
                   Your Messages
                 </h3>
-                <p className="text-gray-600 text-center mb-8 max-w-md">
+                <p className="text-gray-600 text-center mb-6 md:mb-8 max-w-sm md:max-w-md px-4 md:px-0">
                   Select a conversation to start messaging, or browse listings
                   to connect with sellers
                 </p>
-                <div className="flex gap-4">
+                <div className="flex flex-col md:flex-row gap-3 md:gap-4 w-full max-w-xs md:max-w-none px-4 md:px-0">
                   <Button
                     variant="outline"
                     onClick={() => navigate("/products")}
-                    className="border-gray-300 hover:border-blue-500 hover:bg-blue-50"
+                    className="border-gray-300 hover:border-blue-500 hover:bg-blue-50 w-full"
                   >
                     <Package className="h-4 w-4 mr-2" />
                     Browse Products
@@ -758,7 +874,7 @@ const Messages = () => {
                   <Button
                     variant="outline"
                     onClick={() => navigate("/properties")}
-                    className="border-gray-300 hover:border-blue-500 hover:bg-blue-50"
+                    className="border-gray-300 hover:border-blue-500 hover:bg-blue-50 w-full"
                   >
                     <Home className="h-4 w-4 mr-2" />
                     Browse Properties
