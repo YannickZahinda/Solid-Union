@@ -62,10 +62,15 @@ const Dashboard = () => {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
 
+      const { count: messagesCount } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
+
       setStats({
         totalListings: (productsCount || 0) + (propertiesCount || 0),
         totalViews: 0, // You can implement view tracking later
-        totalMessages: 0, // Implement messaging system
+        totalMessages: messagesCount || 0,
         profileCompletion: profile?.completion_percentage || 0
       });
     } catch (error) {
