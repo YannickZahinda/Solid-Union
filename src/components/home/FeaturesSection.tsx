@@ -6,41 +6,41 @@ const FeaturesSection = () => {
   const features = [
     {
       icon: Search,
-      title: "Search Professionals",
-      description: "Find skilled professionals and service providers in your area.",
-      action: "Find Services",
+      title: "Rechercher des Professionnels",
+      description: "Trouvez des professionnels qualifiés et des prestataires de services près de chez vous.",
+      action: "Trouver des Services",
       href: "/services",
       gradient: "from-primary to-primary-glow"
     },
     {
       icon: ShoppingBag,
-      title: "Buy & Sell Products",
-      description: "Discover quality products from local sellers and entrepreneurs.",
-      action: "Browse Products",
+      title: "Acheter & Vendre des Produits",
+      description: "Découvrez des produits de qualité auprès de vendeurs et entrepreneurs locaux.",
+      action: "Parcourir les Produits",
       href: "/products",
       gradient: "from-secondary to-accent"
     },
     {
       icon: Home,
-      title: "Rent Properties",
-      description: "Find your perfect home or list your property for rent.",
-      action: "View Properties",
+      title: "Louer des Biens",
+      description: "Trouvez votre logement idéal ou listez votre propriété à louer.",
+      action: "Voir les Biens",
       href: "/properties",
       gradient: "from-success to-primary"
     },
     {
       icon: Briefcase,
-      title: "Find Jobs",
-      description: "Connect with employment opportunities that match your skills.",
-      action: "Search Jobs",
+      title: "Trouver un Emploi",
+      description: "Connectez-vous avec des opportunités d'emploi correspondant à vos compétences.",
+      action: "Rechercher des Emplois",
       href: "/jobs",
       gradient: "from-accent to-secondary"
     },
     {
       icon: Calendar,
-      title: "Attend Events",
-      description: "Stay connected with community events and networking opportunities.",
-      action: "See Events",
+      title: "Participer à des Événements",
+      description: "Restez connecté avec les événements communautaires et opportunités de réseautage.",
+      action: "Voir les Événements",
       href: "/events",
       gradient: "from-primary to-success"
     }
@@ -51,11 +51,11 @@ const FeaturesSection = () => {
       <div className="container-max">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-            Everything You Need in <span className="text-gradient">One Platform</span>
+            Tout ce dont vous avez besoin sur <span className="text-gradient">une seule plateforme</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Whether you're looking to buy, sell, rent, work, or connect, SolidUnion provides 
-            all the tools you need to thrive in Congo's growing digital economy.
+            Que vous souhaitiez acheter, vendre, louer, travailler ou vous connecter, SolidUnion fournit
+            tous les outils dont vous avez besoin pour prospérer dans l'économie numérique en croissance du Congo.
           </p>
         </div>
 
@@ -87,26 +87,26 @@ const FeaturesSection = () => {
           })}
         </div>
 
-        {/* CTA Section */}
+        {/* Section CTA */}
         <div className="text-center">
           <div className="inline-flex flex-col items-center p-12 rounded-2xl bg-[image:var(--gradient-warm)] text-accent-foreground">
             <h3 className="text-2xl md:text-3xl font-bold mb-4">
-              Ready to Get Started?
+              Prêt à Commencer ?
             </h3>
             <p className="text-xl mb-8 opacity-90 max-w-2xl">
-              Join thousands of people already using SolidUnion to grow their businesses 
-              and connect with opportunities across Congo.
+              Rejoignez les milliers de personnes qui utilisent déjà SolidUnion pour développer leurs entreprises
+              et se connecter à des opportunités à travers le Congo.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link to="/signup">
                 <Button className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3">
-                  Create Account
+                  Créer un Compte
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
               <Link to="/about">
                 <Button variant="outline" className="border-accent-foreground/30 text-accent-foreground hover:bg-accent-foreground/10 px-8 py-3">
-                  Learn More
+                  En Savoir Plus
                 </Button>
               </Link>
             </div>
