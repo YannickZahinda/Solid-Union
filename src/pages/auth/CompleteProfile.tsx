@@ -127,8 +127,8 @@ const CompleteProfile = () => {
     } = await supabase.auth.getUser();
     if (!user) {
       toast({
-        title: "Error",
-        description: "User not found. Please login again.",
+        title: "Erreur",
+        description: "Utilisateur non trouvé. Veuillez vous reconnecter.",
         variant: "destructive",
       });
       setLoading(false);
@@ -136,7 +136,6 @@ const CompleteProfile = () => {
     }
 
     try {
-      // First, ensure the user has a profile (this should already exist via trigger)
       const { data: existingProfile, error: profileCheckError } = await supabase
         .from("profiles")
         .select("id")
@@ -144,7 +143,6 @@ const CompleteProfile = () => {
         .single();
 
       if (profileCheckError && profileCheckError.code === "PGRST116") {
-        // Profile doesn't exist, create it
         const { error: createProfileError } = await supabase
           .from("profiles")
           .insert({
@@ -161,7 +159,6 @@ const CompleteProfile = () => {
         throw profileCheckError;
       }
 
-      // Update profile
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
@@ -177,9 +174,7 @@ const CompleteProfile = () => {
 
       if (profileError) throw profileError;
 
-      // Update interests - only if we have valid categories
       if (selectedInterests.length > 0) {
-        // First verify categories exist
         const { data: validCategories, error: categoriesError } = await supabase
           .from("categories")
           .select("id")
@@ -189,10 +184,8 @@ const CompleteProfile = () => {
 
         const validCategoryIds = validCategories?.map((c) => c.id) || [];
 
-        // Clear existing interests
         await supabase.from("user_interests").delete().eq("user_id", user.id);
 
-        // Insert only valid interests
         if (validCategoryIds.length > 0) {
           const interestsData = validCategoryIds.map((categoryId) => ({
             user_id: user.id,
@@ -205,29 +198,27 @@ const CompleteProfile = () => {
             .insert(interestsData);
 
           if (interestsError) {
-            console.error("Interests insert error:", interestsError);
+            console.error("Erreur d'insertion des intérêts:", interestsError);
             throw interestsError;
           }
         }
       } else {
-        // Clear interests if none selected
         await supabase.from("user_interests").delete().eq("user_id", user.id);
       }
 
       toast({
-        title: "Profile Updated",
-        description: "Your profile has been successfully updated.",
+        title: "Profil mis à jour",
+        description: "Votre profil a été mis à jour avec succès.",
       });
 
-      // Refresh to get updated completion percentage
       setTimeout(() => {
         navigate("/dashboard");
       }, 1000);
     } catch (error: any) {
-      console.error("Profile update error:", error);
+      console.error("Erreur de mise à jour du profil:", error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to update profile",
+        title: "Erreur",
+        description: error.message || "Échec de la mise à jour du profil",
         variant: "destructive",
       });
     } finally {
@@ -244,21 +235,19 @@ const CompleteProfile = () => {
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Validate file
     if (!file.type.startsWith("image/")) {
       toast({
-        title: "Invalid file",
-        description: "Please upload an image file",
+        title: "Fichier invalide",
+        description: "Veuillez télécharger un fichier image",
         variant: "destructive",
       });
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      // 5MB limit
       toast({
-        title: "File too large",
-        description: "Please upload an image smaller than 5MB",
+        title: "Fichier trop volumineux",
+        description: "Veuillez télécharger une image de moins de 5MB",
         variant: "destructive",
       });
       return;
@@ -279,16 +268,15 @@ const CompleteProfile = () => {
         data: { publicUrl },
       } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
-      // Update profile with new avatar URL
       setProfileData((prev) => ({ ...prev, avatar_url: publicUrl }));
 
       toast({
-        title: "Success",
-        description: "Profile picture uploaded successfully",
+        title: "Succès",
+        description: "Photo de profil téléchargée avec succès",
       });
     } catch (error: any) {
       toast({
-        title: "Upload failed",
+        title: "Échec du téléchargement",
         description: error.message,
         variant: "destructive",
       });
@@ -297,7 +285,7 @@ const CompleteProfile = () => {
 
   const calculateProgress = () => {
     let filledFields = 0;
-    const totalFields = 7; // Excluding avatar_url which is optional
+    const totalFields = 7;
 
     if (profileData.full_name.trim()) filledFields++;
     if (profileData.city.trim()) filledFields++;
@@ -316,10 +304,9 @@ const CompleteProfile = () => {
     <Layout showFooter={false}>
       <div className="min-h-screen bg-muted/30 py-8 px-4">
         <div className="max-w-4xl mx-auto">
-          {/* Progress Bar */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-semibold">Profile Completion</h2>
+              <h2 className="text-lg font-semibold">Complétion du Profil</h2>
               <span className="text-sm font-medium">{progress}%</span>
             </div>
             <Progress value={progress} className="h-2" />
@@ -327,17 +314,18 @@ const CompleteProfile = () => {
               {progress < 50 ? (
                 <span className="flex items-center text-amber-600">
                   <AlertCircle className="h-4 w-4 mr-1" />
-                  Complete your profile to unlock all features
+                  Complétez votre profil pour débloquer toutes les
+                  fonctionnalités
                 </span>
               ) : progress < 90 ? (
                 <span className="flex items-center text-blue-600">
                   <CheckCircle className="h-4 w-4 mr-1" />
-                  Good progress! Keep going
+                  Bon progrès ! Continuez
                 </span>
               ) : (
                 <span className="flex items-center text-green-600">
                   <CheckCircle className="h-4 w-4 mr-1" />
-                  Excellent! Your profile is almost complete
+                  Excellent ! Votre profil est presque complet
                 </span>
               )}
             </div>
@@ -345,20 +333,18 @@ const CompleteProfile = () => {
 
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left Column - Basic Info */}
               <div className="lg:col-span-2 space-y-6">
-                {/* Personal Info Card */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
                       <User className="h-5 w-5 mr-2" />
-                      Personal Information
+                      Informations Personnelles
                     </CardTitle>
-                    <CardDescription>Tell us about yourself</CardDescription>
+                    <CardDescription>Parlez-nous de vous</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="full_name">Full Name *</Label>
+                      <Label htmlFor="full_name">Nom Complet *</Label>
                       <Input
                         id="full_name"
                         value={profileData.full_name}
@@ -368,7 +354,7 @@ const CompleteProfile = () => {
                             full_name: e.target.value,
                           })
                         }
-                        placeholder="John Doe"
+                        placeholder="Jean Dupont"
                         required
                       />
                     </div>
@@ -377,7 +363,7 @@ const CompleteProfile = () => {
                       <div className="space-y-2">
                         <Label htmlFor="city" className="flex items-center">
                           <MapPin className="h-4 w-4 mr-1" />
-                          City *
+                          Ville *
                         </Label>
                         <Input
                           id="city"
@@ -388,7 +374,7 @@ const CompleteProfile = () => {
                               city: e.target.value,
                             })
                           }
-                          placeholder="New York"
+                          placeholder="Paris"
                           required
                         />
                       </div>
@@ -396,7 +382,7 @@ const CompleteProfile = () => {
                       <div className="space-y-2">
                         <Label htmlFor="phone" className="flex items-center">
                           <Phone className="h-4 w-4 mr-1" />
-                          Phone *
+                          Téléphone *
                         </Label>
                         <Input
                           id="phone"
@@ -407,7 +393,7 @@ const CompleteProfile = () => {
                               phone: e.target.value,
                             })
                           }
-                          placeholder="+1 (555) 123-4567"
+                          placeholder="+33 1 23 45 67 89"
                           required
                         />
                       </div>
@@ -424,7 +410,7 @@ const CompleteProfile = () => {
                             bio: e.target.value,
                           })
                         }
-                        placeholder="Tell us about yourself, your business, or what you're looking for..."
+                        placeholder="Parlez-nous de vous, de votre entreprise ou de ce que vous recherchez..."
                         rows={3}
                         required
                       />
@@ -432,18 +418,19 @@ const CompleteProfile = () => {
                   </CardContent>
                 </Card>
 
-                {/* Business Info Card */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
                       <Building className="h-5 w-5 mr-2" />
-                      Business Information
+                      Informations Professionnelles
                     </CardTitle>
-                    <CardDescription>Optional business details</CardDescription>
+                    <CardDescription>
+                      Détails optionnels sur votre entreprise
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="company_name">Company Name</Label>
+                      <Label htmlFor="company_name">Nom de l'Entreprise</Label>
                       <Input
                         id="company_name"
                         value={profileData.company_name}
@@ -453,14 +440,14 @@ const CompleteProfile = () => {
                             company_name: e.target.value,
                           })
                         }
-                        placeholder="Your company name"
+                        placeholder="Nom de votre entreprise"
                       />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="website" className="flex items-center">
                         <Globe className="h-4 w-4 mr-1" />
-                        Website
+                        Site Web
                       </Label>
                       <Input
                         id="website"
@@ -471,7 +458,7 @@ const CompleteProfile = () => {
                             website: e.target.value,
                           })
                         }
-                        placeholder="https://yourwebsite.com"
+                        placeholder="https://votresite.com"
                         type="url"
                       />
                     </div>
@@ -479,17 +466,15 @@ const CompleteProfile = () => {
                 </Card>
               </div>
 
-              {/* Right Column - Interests */}
               <div className="space-y-6">
-                {/* Interests Card */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
                       <Briefcase className="h-5 w-5 mr-2" />
-                      Your Interests *
+                      Vos Centres d'Intérêt *
                     </CardTitle>
                     <CardDescription>
-                      Select categories you're interested in
+                      Sélectionnez les catégories qui vous intéressent
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -517,17 +502,17 @@ const CompleteProfile = () => {
                       ))}
                     </div>
                     <p className="text-sm text-muted-foreground mt-4">
-                      This helps us show you relevant listings and suggestions.
+                      Cela nous aide à vous montrer des annonces et suggestions
+                      pertinentes.
                     </p>
                   </CardContent>
                 </Card>
 
-                {/* Avatar Upload Card */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
                       <Camera className="h-5 w-5 mr-2" />
-                      Profile Picture
+                      Photo de Profil
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -536,7 +521,7 @@ const CompleteProfile = () => {
                         {profileData.avatar_url ? (
                           <img
                             src={profileData.avatar_url}
-                            alt="Profile"
+                            alt="Profil"
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -551,24 +536,23 @@ const CompleteProfile = () => {
                           className="hidden"
                         />
                         <Button variant="outline" size="sm" type="button">
-                          Upload Photo
+                          Télécharger une Photo
                         </Button>
                       </label>
                       <p className="text-xs text-muted-foreground mt-2 text-center">
-                        Optional - You can add this later
+                        Optionnel - Vous pouvez ajouter cela plus tard
                       </p>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Submit Card */}
                 <Card>
                   <CardContent className="pt-6">
                     <div className="space-y-4">
                       <div className="text-center">
                         <div className="text-3xl font-bold">{progress}%</div>
                         <div className="text-sm text-muted-foreground">
-                          Profile Complete
+                          Profil Complété
                         </div>
                       </div>
 
@@ -577,13 +561,15 @@ const CompleteProfile = () => {
                         className="w-full"
                         disabled={loading || progress < 50}
                       >
-                        {loading ? "Saving..." : "Save & Continue"}
+                        {loading
+                          ? "Enregistrement..."
+                          : "Enregistrer & Continuer"}
                       </Button>
 
                       {progress < 50 && (
                         <p className="text-sm text-amber-600 text-center">
-                          Please complete at least 50% of your profile to
-                          continue
+                          Veuillez compléter au moins 50% de votre profil pour
+                          continuer
                         </p>
                       )}
 
@@ -594,7 +580,7 @@ const CompleteProfile = () => {
                         onClick={() => navigate("/dashboard")}
                         disabled={progress < 50}
                       >
-                        Skip for Now
+                        Passer pour l'instant
                       </Button>
                     </div>
                   </CardContent>

@@ -173,10 +173,7 @@ const Profile = () => {
       if (error) throw error;
       setProfile(profileData);
 
-      // Fetch user interests
       await fetchUserInterests(user.id);
-
-      // Fetch real data
       await fetchRealStats(user.id);
       await fetchRecentListings(user.id);
       await fetchRecentActivities(user.id);
@@ -201,7 +198,7 @@ const Profile = () => {
       if (error) throw error;
       setCategories(data || []);
     } catch (error: any) {
-      console.error("Error fetching categories:", error);
+      console.error("Erreur lors de la récupération des catégories:", error);
     }
   };
 
@@ -226,17 +223,18 @@ const Profile = () => {
 
       if (error) throw error;
 
-      // Data will be in format: { id, category_id, interest_level, category: {...} }
       setUserInterests(data || []);
       setSelectedInterests(data?.map((interest) => interest.category_id) || []);
     } catch (error: any) {
-      console.error("Error fetching user interests:", error);
+      console.error(
+        "Erreur lors de la récupération des centres d'intérêt:",
+        error
+      );
     }
   };
 
   const fetchRealStats = async (userId: string) => {
     try {
-      // Count listings
       const { count: productsCount } = await supabase
         .from("products")
         .select("*", { count: "exact", head: true })
@@ -249,21 +247,18 @@ const Profile = () => {
 
       const totalListings = (productsCount || 0) + (propertiesCount || 0);
 
-      // Count profile views
       const { count: profileViews } = await supabase
         .from("views")
         .select("*", { count: "exact", head: true })
-        .eq("listing_id", userId) // Assuming views on profile uses user_id as listing_id
+        .eq("listing_id", userId)
         .eq("listing_type", "profile");
 
-      // Count messages
       const { count: messagesCount } = await supabase
         .from("messages")
         .select("*", { count: "exact", head: true })
         .eq("receiver_id", userId);
 
-      // Calculate average rating (simplified - you'll need a ratings table)
-      const averageRating = 4.5; // Placeholder
+      const averageRating = 4.5;
 
       setStats([
         {
@@ -296,13 +291,12 @@ const Profile = () => {
         },
       ]);
     } catch (error: any) {
-      console.error("Error fetching stats:", error);
+      console.error("Erreur lors de la récupération des statistiques:", error);
     }
   };
 
   const fetchRecentListings = async (userId: string) => {
     try {
-      // Fetch recent products
       const { data: products, error: productsError } = await supabase
         .from("products")
         .select("id, title, price, created_at")
@@ -312,7 +306,6 @@ const Profile = () => {
 
       if (productsError) throw productsError;
 
-      // Fetch recent properties
       const { data: properties, error: propertiesError } = await supabase
         .from("properties")
         .select("id, title, price, created_at")
@@ -341,7 +334,10 @@ const Profile = () => {
 
       setRecentListings(allListings);
     } catch (error: any) {
-      console.error("Error fetching recent listings:", error);
+      console.error(
+        "Erreur lors de la récupération des annonces récentes:",
+        error
+      );
     }
   };
 
@@ -349,7 +345,6 @@ const Profile = () => {
     try {
       const activitiesList: Activity[] = [];
 
-      // Recent listings
       const { data: recentListings } = await supabase
         .from("products")
         .select("title, created_at")
@@ -369,7 +364,6 @@ const Profile = () => {
         });
       });
 
-      // Recent messages
       const { data: recentMessages } = await supabase
         .from("messages")
         .select("content, created_at")
@@ -389,7 +383,6 @@ const Profile = () => {
         });
       });
 
-      // Profile views (last 24 hours)
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
 
@@ -411,7 +404,6 @@ const Profile = () => {
         });
       }
 
-      // Sort by timestamp
       activitiesList.sort(
         (a, b) =>
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
@@ -419,7 +411,7 @@ const Profile = () => {
 
       setActivities(activitiesList.slice(0, 5));
     } catch (error: any) {
-      console.error("Error fetching activities:", error);
+      console.error("Erreur lors de la récupération des activités:", error);
     }
   };
 
@@ -468,7 +460,6 @@ const Profile = () => {
     if (!user) return;
 
     try {
-      // Delete existing interests
       const { error: deleteError } = await supabase
         .from("user_interests")
         .delete()
@@ -476,7 +467,6 @@ const Profile = () => {
 
       if (deleteError) throw deleteError;
 
-      // Insert new interests
       if (selectedInterests.length > 0) {
         const interestsData = selectedInterests.map((categoryId) => ({
           user_id: user.id,
@@ -491,7 +481,6 @@ const Profile = () => {
         if (insertError) throw insertError;
       }
 
-      // Refresh interests
       await fetchUserInterests(user.id);
 
       toast({
@@ -556,7 +545,7 @@ const Profile = () => {
         description: "Votre photo de profil a été mise à jour.",
       });
     } catch (error: any) {
-      console.error("Avatar upload error:", error);
+      console.error("Erreur de téléchargement d'avatar:", error);
       toast({
         title: "Erreur de téléchargement",
         description: error.message || "Impossible de télécharger l'avatar",
@@ -605,11 +594,9 @@ const Profile = () => {
   return (
     <Layout>
       <div className="container max-w-7xl py-8 px-4">
-        {/* En-tête du Profil */}
         <Card className="mb-8">
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-              {/* Section Avatar */}
               <div className="relative group">
                 <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-background shadow-lg">
                   {profile.avatar_url ? (
@@ -635,7 +622,6 @@ const Profile = () => {
                 </label>
               </div>
 
-              {/* Informations du Profil */}
               <div className="flex-1">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                   <div>
@@ -677,7 +663,6 @@ const Profile = () => {
                   </div>
                 </div>
 
-                {/* Progression du Profil */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">
@@ -703,7 +688,6 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        {/* Grille de Statistiques */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {stats.map((stat, index) => (
             <Card key={index} className="hover:shadow-lg transition-shadow">
@@ -729,7 +713,6 @@ const Profile = () => {
           ))}
         </div>
 
-        {/* Onglets */}
         <Tabs defaultValue="info" className="space-y-6">
           <TabsList className="grid w-full grid-cols-1 md:grid-cols-5">
             <TabsTrigger value="info">Informations Personnelles</TabsTrigger>
@@ -739,7 +722,6 @@ const Profile = () => {
             <TabsTrigger value="settings">Paramètres</TabsTrigger>
           </TabsList>
 
-          {/* Onglet Informations Personnelles */}
           <TabsContent value="info">
             <Card>
               <CardHeader>
@@ -896,7 +878,6 @@ const Profile = () => {
             </Card>
           </TabsContent>
 
-          {/* Onglet Centres d'Intérêt */}
           <TabsContent value="interests">
             <Card>
               <CardHeader>
@@ -1008,7 +989,6 @@ const Profile = () => {
             </Card>
           </TabsContent>
 
-          {/* Onglet Mes Annonces */}
           <TabsContent value="listings">
             <Card>
               <CardHeader>
@@ -1090,7 +1070,6 @@ const Profile = () => {
             </Card>
           </TabsContent>
 
-          {/* Onglet Activité Récente */}
           <TabsContent value="activity">
             <Card>
               <CardHeader>
@@ -1142,10 +1121,8 @@ const Profile = () => {
             </Card>
           </TabsContent>
 
-          {/* Onglet Paramètres */}
           <TabsContent value="settings">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Notifications */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
@@ -1237,7 +1214,6 @@ const Profile = () => {
                 </CardContent>
               </Card>
 
-              {/* Sécurité */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
