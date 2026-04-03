@@ -6,7 +6,7 @@ import heroFun from "@/assets/hero-fun.png";
 
 const About = () => {
   useEffect(() => {
-    document.title = "About SolidUnion | Community & Opportunities in Congo";
+    document.title = "À propos de SolidUnion | Communauté & Opportunités au Congo";
     // Meta description
     let metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
     if (!metaDesc) {
@@ -14,7 +14,7 @@ const About = () => {
       metaDesc.name = "description";
       document.head.appendChild(metaDesc);
     }
-    metaDesc.content = "Learn about SolidUnion — connecting buyers, sellers, landlords, and communities across the DRC.";
+    metaDesc.content = "Découvrez SolidUnion — la plateforme qui connecte acheteurs, vendeurs, propriétaires et communautés à travers la RDC.";
 
     // Canonical link
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
@@ -23,22 +23,22 @@ const About = () => {
       canonical.rel = "canonical";
       document.head.appendChild(canonical);
     }
-    canonical.href = `${window.location.origin}/about`;
+    canonical.href = `${window.location.origin}/a-propos`;
   }, []);
 
   return (
     <Layout>
       <header className="bg-[image:var(--gradient-subtle)] text-foreground">
         <div className="container-max section-padding text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">About SolidUnion</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">À propos de SolidUnion</h1>
           <p className="text-lg text-foreground/80 max-w-3xl mx-auto">
-            SolidUnion is a community-powered platform connecting buyers, sellers, landlords, job seekers, and event organizers across the Democratic Republic of Congo.
-            We celebrate entrepreneurship, enable access to opportunities, and support social causes that uplift our communities.
+            SolidUnion est une plateforme communautaire qui connecte acheteurs, vendeurs, propriétaires, chercheurs d'emploi et organisateurs d'événements à travers la République Démocratique du Congo.
+            Nous célébrons l'entrepreneuriat, facilitons l'accès aux opportunités et soutenons les causes sociales qui renforcent nos communautés.
           </p>
           <div className="mt-8">
             <img
               src={heroFun}
-              alt="Illustration of community and commerce in the DRC"
+              alt="Illustration de la communauté et du commerce en RDC"
               className="mx-auto w-full max-w-3xl rounded-2xl shadow-[var(--shadow-elegant)]"
               loading="lazy"
             />
@@ -50,43 +50,43 @@ const About = () => {
         <div className="container-max grid gap-6 md:grid-cols-2">
           <Card className="card-elevated">
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-2">Community & Inclusion</h2>
+              <h2 className="text-xl font-semibold mb-2">Communauté & Inclusion</h2>
               <p className="text-muted-foreground">
-                We bring people together — residents, artisans, and businesses — to share services, products, and opportunities in a safe and friendly marketplace.
+                Nous rassemblons les habitants, artisans et entreprises pour partager services, produits et opportunités dans un marché sécurisé et convivial.
               </p>
             </CardContent>
           </Card>
           <Card className="card-elevated">
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-2">Jobs & Opportunities</h2>
+              <h2 className="text-xl font-semibold mb-2">Emplois & Opportunités</h2>
               <p className="text-muted-foreground">
-                Discover jobs and freelance missions while building your professional network across the DRC.
+                Découvrez des emplois et des missions freelance tout en développant votre réseau professionnel à travers la RDC.
               </p>
             </CardContent>
           </Card>
           <Card className="card-elevated">
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-2">Properties & Housing</h2>
+              <h2 className="text-xl font-semibold mb-2">Propriétés & Logements</h2>
               <p className="text-muted-foreground">
-                From studios to family homes, SolidUnion helps you find trusted rentals and connect with landlords.
+                Des studios aux maisons familiales, SolidUnion vous aide à trouver des locations de confiance et à entrer en contact avec les propriétaires.
               </p>
             </CardContent>
           </Card>
           <Card className="card-elevated">
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-2">Businesses & Events</h2>
+              <h2 className="text-xl font-semibold mb-2">Entreprises & Événements</h2>
               <p className="text-muted-foreground">
-                Promote your products, showcase cultural events, and grow your business with a supportive community.
+                Promouvez vos produits, mettez en valeur les événements culturels et développez votre entreprise grâce à une communauté solidaire.
               </p>
             </CardContent>
           </Card>
         </div>
 
         <section className="container-max text-center mt-12">
-          <Badge className="bg-secondary text-secondary-foreground">Our Motto</Badge>
-          <h3 className="text-2xl font-semibold mt-4">Together, we build a stronger Congo.</h3>
+          <Badge className="bg-secondary text-secondary-foreground">Notre devise</Badge>
+          <h3 className="text-2xl font-semibold mt-4">Ensemble, construisons un Congo plus fort.</h3>
           <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-            Join us in empowering local talent, celebrating culture, and creating sustainable growth across the DRC.
+            Rejoignez-nous pour soutenir les talents locaux, célébrer notre culture et créer une croissance durable à travers la RDC.
           </p>
         </section>
       </main>
