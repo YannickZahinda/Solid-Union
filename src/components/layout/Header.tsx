@@ -20,6 +20,36 @@ import {
   TrendingUp,
   Filter,
   BarChart3,
+  Briefcase,
+  Wrench,
+  HelpCircle,
+  Star,
+  Clock,
+  Award,
+  Users,
+  CreditCard,
+  Truck,
+  Store,
+  Smartphone,
+  Car,
+  Shirt,
+  Heart,
+  Gift,
+  Book,
+  Music,
+  Gamepad,
+  Camera,
+  Laptop,
+  Watch,
+  Sofa,
+  Bed,
+  Bath,
+  Ruler,
+  MapPin,
+  DollarSign,
+  Calendar,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import logo from "@/assets/solidunion-logo.png";
 import { supabase } from "@/services/supabase";
@@ -66,7 +96,7 @@ const Header = () => {
           setProfile(null);
           setUnreadMessages(0);
         }
-      }
+      },
     );
 
     return () => {
@@ -129,6 +159,149 @@ const Header = () => {
       .slice(0, 2);
   };
 
+  // Category groups for better organization
+  const productCategories = [
+    {
+      name: "Électronique",
+      icon: <Smartphone className="h-4 w-4" />,
+      path: "/products?category=electronics",
+    },
+    {
+      name: "Mode & Vêtements",
+      icon: <Shirt className="h-4 w-4" />,
+      path: "/products?category=fashion",
+    },
+    {
+      name: "Véhicules",
+      icon: <Car className="h-4 w-4" />,
+      path: "/products?category=vehicles",
+    },
+    {
+      name: "Maison & Jardin",
+      icon: <Sofa className="h-4 w-4" />,
+      path: "/products?category=home",
+    },
+    {
+      name: "High-Tech",
+      icon: <Laptop className="h-4 w-4" />,
+      path: "/products?category=tech",
+    },
+    {
+      name: "Sports & Loisirs",
+      icon: <Gamepad className="h-4 w-4" />,
+      path: "/products?category=sports",
+    },
+    {
+      name: "Livres & Musique",
+      icon: <Book className="h-4 w-4" />,
+      path: "/products?category=books",
+    },
+    {
+      name: "Beauté & Santé",
+      icon: <Heart className="h-4 w-4" />,
+      path: "/products?category=beauty",
+    },
+  ];
+
+  const propertyCategories = [
+    {
+      name: "Appartements à louer",
+      icon: <Building className="h-4 w-4" />,
+      path: "/properties?type=apartment&listing=rent",
+    },
+    {
+      name: "Appartements à vendre",
+      icon: <Building className="h-4 w-4" />,
+      path: "/properties?type=apartment&listing=sale",
+    },
+    {
+      name: "Maisons à louer",
+      icon: <Home className="h-4 w-4" />,
+      path: "/properties?type=house&listing=rent",
+    },
+    {
+      name: "Maisons à vendre",
+      icon: <Home className="h-4 w-4" />,
+      path: "/properties?type=house&listing=sale",
+    },
+    {
+      name: "Espaces commerciaux",
+      icon: <Store className="h-4 w-4" />,
+      path: "/properties?type=commercial",
+    },
+    {
+      name: "Terrains",
+      icon: <MapPin className="h-4 w-4" />,
+      path: "/properties?type=land",
+    },
+    {
+      name: "Vacances & Court séjour",
+      icon: <Calendar className="h-4 w-4" />,
+      path: "/properties?type=rental",
+    },
+  ];
+
+  const jobCategories = [
+    {
+      name: "Offres d'emploi",
+      icon: <Briefcase className="h-4 w-4" />,
+      path: "/jobs",
+    },
+    {
+      name: "Freelance",
+      icon: <Users className="h-4 w-4" />,
+      path: "/jobs?type=freelance",
+    },
+    {
+      name: "Stage & Alternance",
+      icon: <Clock className="h-4 w-4" />,
+      path: "/jobs?type=internship",
+    },
+    {
+      name: "CDI / CDD",
+      icon: <Award className="h-4 w-4" />,
+      path: "/jobs?type=fulltime",
+    },
+    {
+      name: "Télétravail",
+      icon: <Laptop className="h-4 w-4" />,
+      path: "/jobs?type=remote",
+    },
+  ];
+
+  const serviceCategories = [
+    {
+      name: "Services à domicile",
+      icon: <Wrench className="h-4 w-4" />,
+      path: "/services",
+    },
+    {
+      name: "Cours & Formations",
+      icon: <Book className="h-4 w-4" />,
+      path: "/services?type=education",
+    },
+    {
+      name: "Coaching & Conseil",
+      icon: <Users className="h-4 w-4" />,
+      path: "/services?type=coaching",
+    },
+    {
+      name: "Transport & Logistique",
+      icon: <Truck className="h-4 w-4" />,
+      path: "/services?type=transport",
+    },
+    {
+      name: "Événementiel",
+      icon: <Calendar className="h-4 w-4" />,
+      path: "/services?type=events",
+    },
+    {
+      name: "Réparations",
+      icon: <Wrench className="h-4 w-4" />,
+      path: "/services?type=repair",
+    },
+  ];
+
   if (loading) {
     return (
       <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 border-b border-border">
@@ -168,72 +341,25 @@ const Header = () => {
             {/* Desktop Navigation */}
             <NavigationMenu className="hidden lg:flex">
               <NavigationMenuList>
-                {/* Browse Dropdown */}
+                {/* Products Dropdown */}
                 <NavigationMenuItem>
                   <NavigationMenuTrigger className="h-9">
-                    Parcourir
+                    <Package className="h-4 w-4 mr-2" />
+                    Produits
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <div className="grid gap-3 p-4 md:w-[400px] lg:w-[500px]">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <h4 className="text-sm font-semibold text-muted-foreground">
-                            Produits
-                          </h4>
-                          <Link to="/products?category=electronics">
+                    <div className="grid gap-3 p-4 md:w-[600px] lg:w-[700px]">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {productCategories.map((category) => (
+                          <Link key={category.name} to={category.path}>
                             <NavigationMenuLink
                               className={navigationMenuTriggerStyle()}
                             >
-                              <Package className="h-4 w-4 mr-2" />
-                              Électronique
+                              {category.icon}
+                              <span className="ml-2">{category.name}</span>
                             </NavigationMenuLink>
                           </Link>
-                          <Link to="/products?category=fashion">
-                            <NavigationMenuLink
-                              className={navigationMenuTriggerStyle()}
-                            >
-                              <Package className="h-4 w-4 mr-2" />
-                              Mode & Vêtements
-                            </NavigationMenuLink>
-                          </Link>
-                          <Link to="/products?category=vehicles">
-                            <NavigationMenuLink
-                              className={navigationMenuTriggerStyle()}
-                            >
-                              <Package className="h-4 w-4 mr-2" />
-                              Véhicules
-                            </NavigationMenuLink>
-                          </Link>
-                        </div>
-                        <div className="space-y-1">
-                          <h4 className="text-sm font-semibold text-muted-foreground">
-                            Propriétés
-                          </h4>
-                          <Link to="/properties?type=apartment">
-                            <NavigationMenuLink
-                              className={navigationMenuTriggerStyle()}
-                            >
-                              <Building className="h-4 w-4 mr-2" />
-                              Appartements à louer
-                            </NavigationMenuLink>
-                          </Link>
-                          <Link to="/properties?type=house">
-                            <NavigationMenuLink
-                              className={navigationMenuTriggerStyle()}
-                            >
-                              <Building className="h-4 w-4 mr-2" />
-                              Maisons à vendre
-                            </NavigationMenuLink>
-                          </Link>
-                          <Link to="/properties?type=commercial">
-                            <NavigationMenuLink
-                              className={navigationMenuTriggerStyle()}
-                            >
-                              <Building className="h-4 w-4 mr-2" />
-                              Espaces commerciaux
-                            </NavigationMenuLink>
-                          </Link>
-                        </div>
+                        ))}
                       </div>
                       <div className="border-t pt-3">
                         <Link to="/products">
@@ -242,10 +368,100 @@ const Header = () => {
                             Voir tous les produits
                           </Button>
                         </Link>
-                        <Link to="/properties" className="mt-2 block">
+                      </div>
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                {/* Properties Dropdown */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="h-9">
+                    <Building className="h-4 w-4 mr-2" />
+                    Immobilier
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="grid gap-3 p-4 md:w-[600px] lg:w-[700px]">
+                      <div className="grid grid-cols-2 gap-3">
+                        {propertyCategories.map((category) => (
+                          <Link key={category.name} to={category.path}>
+                            <NavigationMenuLink
+                              className={navigationMenuTriggerStyle()}
+                            >
+                              {category.icon}
+                              <span className="ml-2">{category.name}</span>
+                            </NavigationMenuLink>
+                          </Link>
+                        ))}
+                      </div>
+                      <div className="border-t pt-3">
+                        <Link to="/properties">
                           <Button variant="outline" className="w-full">
                             <Building className="h-4 w-4 mr-2" />
                             Voir toutes les propriétés
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                {/* Jobs Dropdown */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="h-9">
+                    <Briefcase className="h-4 w-4 mr-2" />
+                    Emplois
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="grid gap-3 p-4 md:w-[500px]">
+                      <div className="grid grid-cols-2 gap-3">
+                        {jobCategories.map((category) => (
+                          <Link key={category.name} to={category.path}>
+                            <NavigationMenuLink
+                              className={navigationMenuTriggerStyle()}
+                            >
+                              {category.icon}
+                              <span className="ml-2">{category.name}</span>
+                            </NavigationMenuLink>
+                          </Link>
+                        ))}
+                      </div>
+                      <div className="border-t pt-3">
+                        <Link to="/jobs">
+                          <Button variant="outline" className="w-full">
+                            <Briefcase className="h-4 w-4 mr-2" />
+                            Voir toutes les offres
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                {/* Services Dropdown */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="h-9">
+                    <Wrench className="h-4 w-4 mr-2" />
+                    Services
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="grid gap-3 p-4 md:w-[500px]">
+                      <div className="grid grid-cols-2 gap-3">
+                        {serviceCategories.map((category) => (
+                          <Link key={category.name} to={category.path}>
+                            <NavigationMenuLink
+                              className={navigationMenuTriggerStyle()}
+                            >
+                              {category.icon}
+                              <span className="ml-2">{category.name}</span>
+                            </NavigationMenuLink>
+                          </Link>
+                        ))}
+                      </div>
+                      <div className="border-t pt-3">
+                        <Link to="/services">
+                          <Button variant="outline" className="w-full">
+                            <Wrench className="h-4 w-4 mr-2" />
+                            Voir tous les services
                           </Button>
                         </Link>
                       </div>
@@ -260,6 +476,18 @@ const Header = () => {
                       className={navigationMenuTriggerStyle()}
                     >
                       À propos
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+
+                {/* Help Link */}
+                <NavigationMenuItem>
+                  <Link to="/help">
+                    <NavigationMenuLink
+                      className={navigationMenuTriggerStyle()}
+                    >
+                      <HelpCircle className="h-4 w-4 mr-1" />
+                      Aide
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
@@ -316,7 +544,7 @@ const Header = () => {
                       <ChevronDown className="h-3 w-3 ml-1" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuItem asChild>
                       <Link to="/create-listing?type=product">
                         <Package className="mr-2 h-4 w-4" />
@@ -327,6 +555,18 @@ const Header = () => {
                       <Link to="/create-listing?type=property">
                         <Building className="mr-2 h-4 w-4" />
                         Nouvelle propriété
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/create-listing?type=job">
+                        <Briefcase className="mr-2 h-4 w-4" />
+                        Nouvelle offre d'emploi
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/create-listing?type=service">
+                        <Wrench className="mr-2 h-4 w-4" />
+                        Nouveau service
                       </Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -550,35 +790,153 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden border-t mt-2">
+          <div className="lg:hidden border-t mt-2 max-h-[calc(100vh-4rem)] overflow-y-auto">
             <div className="py-4 space-y-3">
-              {/* Browse Section */}
+              {/* Products Section */}
               <div className="px-4">
-                <h3 className="text-sm font-semibold text-muted-foreground mb-2">
-                  Parcourir
+                <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center">
+                  <Package className="h-4 w-4 mr-2" />
+                  Produits
                 </h3>
                 <div className="space-y-1">
+                  {productCategories.slice(0, 5).map((category) => (
+                    <Link
+                      key={category.name}
+                      to={category.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sm"
+                      >
+                        {category.icon}
+                        <span className="ml-2">{category.name}</span>
+                      </Button>
+                    </Link>
+                  ))}
                   <Link
                     to="/products"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <Button variant="ghost" className="w-full justify-start">
-                      <Package className="mr-2 h-4 w-4" />
-                      Produits
+                    <Button variant="outline" className="w-full text-sm mt-1">
+                      <Package className="h-4 w-4 mr-2" />
+                      Voir tous les produits
                     </Button>
                   </Link>
+                </div>
+              </div>
+
+              {/* Properties Section */}
+              <div className="px-4">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center">
+                  <Building className="h-4 w-4 mr-2" />
+                  Immobilier
+                </h3>
+                <div className="space-y-1">
+                  {propertyCategories.slice(0, 5).map((category) => (
+                    <Link
+                      key={category.name}
+                      to={category.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sm"
+                      >
+                        {category.icon}
+                        <span className="ml-2">{category.name}</span>
+                      </Button>
+                    </Link>
+                  ))}
                   <Link
                     to="/properties"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <Button variant="ghost" className="w-full justify-start">
-                      <Building className="mr-2 h-4 w-4" />
-                      Propriétés
+                    <Button variant="outline" className="w-full text-sm mt-1">
+                      <Building className="h-4 w-4 mr-2" />
+                      Voir toutes les propriétés
                     </Button>
                   </Link>
+                </div>
+              </div>
+
+              {/* Jobs Section */}
+              <div className="px-4">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center">
+                  <Briefcase className="h-4 w-4 mr-2" />
+                  Emplois
+                </h3>
+                <div className="space-y-1">
+                  {jobCategories.map((category) => (
+                    <Link
+                      key={category.name}
+                      to={category.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sm"
+                      >
+                        {category.icon}
+                        <span className="ml-2">{category.name}</span>
+                      </Button>
+                    </Link>
+                  ))}
+                  <Link to="/jobs" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full text-sm mt-1">
+                      <Briefcase className="h-4 w-4 mr-2" />
+                      Voir toutes les offres
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Services Section */}
+              <div className="px-4">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center">
+                  <Wrench className="h-4 w-4 mr-2" />
+                  Services
+                </h3>
+                <div className="space-y-1">
+                  {serviceCategories.slice(0, 5).map((category) => (
+                    <Link
+                      key={category.name}
+                      to={category.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sm"
+                      >
+                        {category.icon}
+                        <span className="ml-2">{category.name}</span>
+                      </Button>
+                    </Link>
+                  ))}
+                  <Link
+                    to="/services"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Button variant="outline" className="w-full text-sm mt-1">
+                      <Wrench className="h-4 w-4 mr-2" />
+                      Voir tous les services
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              {/* About & Help */}
+              <div className="px-4">
+                <div className="space-y-1">
                   <Link to="/about" onClick={() => setIsMobileMenuOpen(false)}>
                     <Button variant="ghost" className="w-full justify-start">
                       <FileText className="mr-2 h-4 w-4" />À propos
+                    </Button>
+                  </Link>
+                  <Link to="/help" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start">
+                      <HelpCircle className="mr-2 h-4 w-4" />
+                      Aide
                     </Button>
                   </Link>
                 </div>
@@ -715,9 +1073,7 @@ const Header = () => {
                             <div
                               className="h-full bg-primary rounded-full"
                               style={{
-                                width: `${
-                                  profile?.completion_percentage || 0
-                                }%`,
+                                width: `${profile?.completion_percentage || 0}%`,
                               }}
                             />
                           </div>
