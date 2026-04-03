@@ -6,6 +6,7 @@ import {
   Heart,
   TrendingUp,
 } from "lucide-react";
+import FeaturesSection from "./FeaturesSection";
 
 const AboutSection = () => {
   const features = [
@@ -50,7 +51,7 @@ const AboutSection = () => {
   return (
     <section className="section-padding bg-muted/50">
       <div className="container-max">
-        <div className="text-center mb-16">
+        {/* <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
             À propos de <span className="text-gradient">SolidUnion</span>
           </h2>
@@ -60,9 +61,9 @@ const AboutSection = () => {
             soutenir les entreprises locales et créer des opportunités de
             croissance économique à travers la République Démocratique du Congo.
           </p>
-        </div>
+        </div> */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
@@ -79,7 +80,8 @@ const AboutSection = () => {
               </div>
             );
           })}
-        </div>
+        </div> */}
+        <FeaturesSection />
 
         {/* Déclaration de Mission */}
         <div className="mt-20 text-center">
