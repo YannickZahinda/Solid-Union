@@ -50,6 +50,10 @@ import {
   Calendar,
   CheckCircle,
   AlertCircle,
+  CalendarDays,
+  Ticket,
+  Mic2,
+  PartyPopper,
 } from "lucide-react";
 import logo from "@/assets/solidunion-logo.png";
 import { supabase } from "@/services/supabase";
@@ -302,6 +306,50 @@ const Header = () => {
     },
   ];
 
+  // Nouvelle section pour les ÉVÉNEMENTS
+  const eventCategories = [
+    {
+      name: "Conférences",
+      icon: <Mic2 className="h-4 w-4" />,
+      path: "/events?category=conference",
+    },
+    {
+      name: "Ateliers",
+      icon: <Wrench className="h-4 w-4" />,
+      path: "/events?category=workshop",
+    },
+    {
+      name: "Séminaires",
+      icon: <Book className="h-4 w-4" />,
+      path: "/events?category=seminar",
+    },
+    {
+      name: "Webinaires",
+      icon: <Laptop className="h-4 w-4" />,
+      path: "/events?category=webinar",
+    },
+    {
+      name: "Concerts",
+      icon: <Music className="h-4 w-4" />,
+      path: "/events?category=concert",
+    },
+    {
+      name: "Festivals",
+      icon: <PartyPopper className="h-4 w-4" />,
+      path: "/events?category=festival",
+    },
+    {
+      name: "Expositions",
+      icon: <Camera className="h-4 w-4" />,
+      path: "/events?category=exhibition",
+    },
+    {
+      name: "Networking",
+      icon: <Users className="h-4 w-4" />,
+      path: "/events?category=networking",
+    },
+  ];
+
   if (loading) {
     return (
       <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 border-b border-border">
@@ -469,6 +517,46 @@ const Header = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
+                {/* Events Dropdown - NOUVEAU */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="h-9">
+                    <CalendarDays className="h-4 w-4 mr-2" />
+                    Événements
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="grid gap-3 p-4 md:w-[600px] lg:w-[700px]">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {eventCategories.map((category) => (
+                          <Link key={category.name} to={category.path}>
+                            <NavigationMenuLink
+                              className={navigationMenuTriggerStyle()}
+                            >
+                              {category.icon}
+                              <span className="ml-2">{category.name}</span>
+                            </NavigationMenuLink>
+                          </Link>
+                        ))}
+                      </div>
+                      <div className="border-t pt-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <Link to="/events">
+                            <Button variant="outline" className="w-full">
+                              <CalendarDays className="h-4 w-4 mr-2" />
+                              Tous les événements
+                            </Button>
+                          </Link>
+                          <Link to="/events?type=online">
+                            <Button variant="outline" className="w-full">
+                              <Laptop className="h-4 w-4 mr-2" />
+                              Événements en ligne
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
                 {/* About Link */}
                 <NavigationMenuItem>
                   <Link to="/about">
@@ -567,6 +655,12 @@ const Header = () => {
                       <Link to="/create-listing?type=service">
                         <Wrench className="mr-2 h-4 w-4" />
                         Nouveau service
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/create-listing?type=event">
+                        <CalendarDays className="mr-2 h-4 w-4" />
+                        Nouvel événement
                       </Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -920,6 +1014,37 @@ const Header = () => {
                     <Button variant="outline" className="w-full text-sm mt-1">
                       <Wrench className="h-4 w-4 mr-2" />
                       Voir tous les services
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Events Section - NOUVEAU */}
+              <div className="px-4">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center">
+                  <CalendarDays className="h-4 w-4 mr-2" />
+                  Événements
+                </h3>
+                <div className="space-y-1">
+                  {eventCategories.slice(0, 5).map((category) => (
+                    <Link
+                      key={category.name}
+                      to={category.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-sm"
+                      >
+                        {category.icon}
+                        <span className="ml-2">{category.name}</span>
+                      </Button>
+                    </Link>
+                  ))}
+                  <Link to="/events" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full text-sm mt-1">
+                      <CalendarDays className="h-4 w-4 mr-2" />
+                      Voir tous les événements
                     </Button>
                   </Link>
                 </div>
