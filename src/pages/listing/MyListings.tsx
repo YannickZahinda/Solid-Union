@@ -34,6 +34,10 @@ import {
   TrendingUp,
   CheckCircle,
   AlertCircle,
+  CalendarDays,
+  Video,
+  MapPinHouse,
+  Mic2,
 } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { supabase } from "@/services/supabase";
@@ -47,7 +51,7 @@ interface Listing {
   location: string;
   images: string[];
   created_at: string;
-  type: "product" | "property" | "job" | "service";
+  type: "product" | "property" | "job" | "service" | "event";
   status?: string;
 
   // Product specific
@@ -79,14 +83,23 @@ interface Listing {
   duration?: string;
   rating?: number;
   bookings_count?: number;
+
+  // Event specific
+  start_date?: string;
+  end_date?: string;
+  max_attendees?: number;
+  is_online?: boolean;
+  is_free?: boolean;
+  organizer_name?: string;
+  speakers?: string[];
 }
 
 const MyListings = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"all" | "products" | "properties" | "jobs" | "services">(
-    "all"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "all" | "products" | "properties" | "jobs" | "services" | "events"
+  >("all");
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -136,12 +149,27 @@ const MyListings = () => {
 
       if (servicesError) throw servicesError;
 
+      // Récupérer les événements
+      const { data: events, error: eventsError } = await supabase
+        .from("events")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (eventsError) throw eventsError;
+
       // Combiner et mapper toutes les annonces
       const allListings: Listing[] = [
         ...(products?.map((p) => ({ ...p, type: "product" as const })) || []),
-        ...(properties?.map((p) => ({ ...p, type: "property" as const })) || []),
-        ...(jobs?.map((j) => ({ ...j, type: "job" as const, price: j.salary_min })) || []),
+        ...(properties?.map((p) => ({ ...p, type: "property" as const })) ||
+          []),
+        ...(jobs?.map((j) => ({
+          ...j,
+          type: "job" as const,
+          price: j.salary_min,
+        })) || []),
         ...(services?.map((s) => ({ ...s, type: "service" as const })) || []),
+        ...(events?.map((e) => ({ ...e, type: "event" as const })) || []),
       ];
 
       setListings(allListings);
@@ -156,7 +184,10 @@ const MyListings = () => {
     }
   };
 
-  const handleDelete = async (id: string, type: "product" | "property" | "job" | "service") => {
+  const handleDelete = async (
+    id: string,
+    type: "product" | "property" | "job" | "service" | "event",
+  ) => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cette annonce ?")) return;
 
     try {
@@ -174,8 +205,11 @@ const MyListings = () => {
         case "service":
           table = "services";
           break;
+        case "event":
+          table = "events";
+          break;
       }
-      
+
       const { error } = await supabase.from(table).delete().eq("id", id);
 
       if (error) throw error;
@@ -201,6 +235,17 @@ const MyListings = () => {
       day: "numeric",
       month: "long",
       year: "numeric",
+    });
+  };
+
+  const formatDateTime = (dateString?: string) => {
+    if (!dateString) return "Date non spécifiée";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "long",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -231,6 +276,8 @@ const MyListings = () => {
         return <Briefcase className="h-4 w-4" />;
       case "service":
         return <Wrench className="h-4 w-4" />;
+      case "event":
+        return <CalendarDays className="h-4 w-4" />;
       default:
         return <Package className="h-4 w-4" />;
     }
@@ -246,6 +293,8 @@ const MyListings = () => {
         return "Offre d'emploi";
       case "service":
         return "Service";
+      case "event":
+        return "Événement";
       default:
         return "Annonce";
     }
@@ -356,11 +405,14 @@ const MyListings = () => {
   const getStatusColor = (status?: string) => {
     switch (status) {
       case "active":
+      case "published":
         return "bg-green-100 text-green-800";
       case "expired":
         return "bg-gray-100 text-gray-800";
       case "filled":
         return "bg-blue-100 text-blue-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
       default:
         return "bg-green-100 text-green-800";
     }
@@ -369,13 +421,16 @@ const MyListings = () => {
   const getStatusLabel = (status?: string) => {
     switch (status) {
       case "active":
-        return "Actif";
+      case "published":
+        return "Publié";
       case "expired":
         return "Expiré";
       case "filled":
         return "Pourvu";
+      case "cancelled":
+        return "Annulé";
       default:
-        return "Actif";
+        return "Publié";
     }
   };
 
@@ -384,7 +439,7 @@ const MyListings = () => {
     if (activeTab !== "all" && listing.type !== activeTab.slice(0, -1)) {
       return false;
     }
-    
+
     // Filtre par terme de recherche
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
@@ -392,10 +447,13 @@ const MyListings = () => {
         listing.title.toLowerCase().includes(searchLower) ||
         listing.description.toLowerCase().includes(searchLower) ||
         listing.location.toLowerCase().includes(searchLower) ||
-        (listing.company_name && listing.company_name.toLowerCase().includes(searchLower))
+        (listing.company_name &&
+          listing.company_name.toLowerCase().includes(searchLower)) ||
+        (listing.organizer_name &&
+          listing.organizer_name.toLowerCase().includes(searchLower))
       );
     }
-    
+
     return true;
   });
 
@@ -416,7 +474,8 @@ const MyListings = () => {
           <div>
             <h1 className="text-3xl font-bold">Mes annonces</h1>
             <p className="text-muted-foreground">
-              Gérez tous vos produits, propriétés, offres d'emploi et services
+              Gérez tous vos produits, propriétés, offres d'emploi, services et
+              événements
             </p>
           </div>
           <Button asChild>
@@ -441,7 +500,10 @@ const MyListings = () => {
                 <Package className="h-4 w-4" />
                 Produits
               </TabsTrigger>
-              <TabsTrigger value="properties" className="flex items-center gap-2">
+              <TabsTrigger
+                value="properties"
+                className="flex items-center gap-2"
+              >
                 <Home className="h-4 w-4" />
                 Propriétés
               </TabsTrigger>
@@ -452,6 +514,10 @@ const MyListings = () => {
               <TabsTrigger value="services" className="flex items-center gap-2">
                 <Wrench className="h-4 w-4" />
                 Services
+              </TabsTrigger>
+              <TabsTrigger value="events" className="flex items-center gap-2">
+                <CalendarDays className="h-4 w-4" />
+                Événements
               </TabsTrigger>
             </TabsList>
 
@@ -478,6 +544,7 @@ const MyListings = () => {
               onDelete={handleDelete}
               formatPrice={formatPrice}
               formatDate={formatDate}
+              formatDateTime={formatDateTime}
               formatSalary={formatSalary}
               getTypeIcon={getTypeIcon}
               getTypeLabel={getTypeLabel}
@@ -498,6 +565,7 @@ const MyListings = () => {
               onDelete={handleDelete}
               formatPrice={formatPrice}
               formatDate={formatDate}
+              formatDateTime={formatDateTime}
               formatSalary={formatSalary}
               getTypeIcon={getTypeIcon}
               getTypeLabel={getTypeLabel}
@@ -518,6 +586,7 @@ const MyListings = () => {
               onDelete={handleDelete}
               formatPrice={formatPrice}
               formatDate={formatDate}
+              formatDateTime={formatDateTime}
               formatSalary={formatSalary}
               getTypeIcon={getTypeIcon}
               getTypeLabel={getTypeLabel}
@@ -538,6 +607,7 @@ const MyListings = () => {
               onDelete={handleDelete}
               formatPrice={formatPrice}
               formatDate={formatDate}
+              formatDateTime={formatDateTime}
               formatSalary={formatSalary}
               getTypeIcon={getTypeIcon}
               getTypeLabel={getTypeLabel}
@@ -558,6 +628,28 @@ const MyListings = () => {
               onDelete={handleDelete}
               formatPrice={formatPrice}
               formatDate={formatDate}
+              formatDateTime={formatDateTime}
+              formatSalary={formatSalary}
+              getTypeIcon={getTypeIcon}
+              getTypeLabel={getTypeLabel}
+              getStatusColor={getStatusColor}
+              getStatusLabel={getStatusLabel}
+              getConditionLabel={getConditionLabel}
+              getJobTypeLabel={getJobTypeLabel}
+              getExperienceLabel={getExperienceLabel}
+              getPriceTypeLabel={getPriceTypeLabel}
+              getDeliveryTypeLabel={getDeliveryTypeLabel}
+              getPropertyTypeLabel={getPropertyTypeLabel}
+            />
+          </TabsContent>
+
+          <TabsContent value="events" className="mt-0">
+            <ListingGrid
+              listings={filteredListings}
+              onDelete={handleDelete}
+              formatPrice={formatPrice}
+              formatDate={formatDate}
+              formatDateTime={formatDateTime}
               formatSalary={formatSalary}
               getTypeIcon={getTypeIcon}
               getTypeLabel={getTypeLabel}
@@ -601,6 +693,7 @@ const ListingGrid = ({
   onDelete,
   formatPrice,
   formatDate,
+  formatDateTime,
   formatSalary,
   getTypeIcon,
   getTypeLabel,
@@ -614,9 +707,13 @@ const ListingGrid = ({
   getPropertyTypeLabel,
 }: {
   listings: Listing[];
-  onDelete: (id: string, type: "product" | "property" | "job" | "service") => void;
+  onDelete: (
+    id: string,
+    type: "product" | "property" | "job" | "service" | "event",
+  ) => void;
   formatPrice: (price?: number) => string;
   formatDate: (date: string) => string;
+  formatDateTime: (date?: string) => string;
   formatSalary: (min?: number, max?: number) => string;
   getTypeIcon: (type: string) => React.ReactNode;
   getTypeLabel: (type: string) => string;
@@ -649,7 +746,7 @@ const ListingGrid = ({
             {getTypeLabel(listing.type)}
           </Badge>
           {listing.status && (
-            <Badge 
+            <Badge
               className={`absolute top-2 right-2 ${getStatusColor(listing.status)}`}
             >
               {getStatusLabel(listing.status)}
@@ -677,6 +774,12 @@ const ListingGrid = ({
               {listing.company_name}
             </p>
           )}
+          {listing.organizer_name && (
+            <p className="text-sm text-muted-foreground flex items-center gap-1">
+              <Building2 className="h-3 w-3" />
+              Organisé par: {listing.organizer_name}
+            </p>
+          )}
           <CardDescription className="line-clamp-2">
             {listing.description}
           </CardDescription>
@@ -687,10 +790,11 @@ const ListingGrid = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center text-lg font-bold text-primary">
                 <DollarSign className="h-4 w-4 mr-1" />
-                {listing.type === "job" 
+                {listing.type === "job"
                   ? formatSalary(listing.salary_min, listing.salary_max)
-                  : formatPrice(listing.price)
-                }
+                  : listing.type === "event" && listing.is_free
+                    ? "Gratuit"
+                    : formatPrice(listing.price)}
               </div>
               <div className="flex items-center text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4 mr-1" />
@@ -716,7 +820,9 @@ const ListingGrid = ({
                 {listing.bathrooms && <span>🚿 {listing.bathrooms} sdb</span>}
                 {listing.area_sqft && <span>📐 {listing.area_sqft} m²</span>}
                 {listing.property_type && (
-                  <Badge variant="outline">{getPropertyTypeLabel(listing.property_type)}</Badge>
+                  <Badge variant="outline">
+                    {getPropertyTypeLabel(listing.property_type)}
+                  </Badge>
                 )}
               </div>
             )}
@@ -776,6 +882,45 @@ const ListingGrid = ({
                   <span className="flex items-center text-amber-600">
                     <Star className="h-3 w-3 mr-1 fill-current" />
                     {listing.rating} / 5
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Détails spécifiques aux événements */}
+            {listing.type === "event" && (
+              <div className="flex flex-wrap items-center gap-4 text-sm">
+                {listing.start_date && (
+                  <span className="flex items-center text-muted-foreground">
+                    <Calendar className="h-3 w-3 mr-1" />
+                    {formatDateTime(listing.start_date)}
+                  </span>
+                )}
+                {listing.is_online && (
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    <Video className="h-3 w-3" />
+                    En ligne
+                  </Badge>
+                )}
+                {listing.is_free && (
+                  <Badge
+                    variant="outline"
+                    className="flex items-center gap-1 text-green-600"
+                  >
+                    <DollarSign className="h-3 w-3" />
+                    Gratuit
+                  </Badge>
+                )}
+                {listing.max_attendees && (
+                  <span className="flex items-center text-muted-foreground">
+                    <Users className="h-3 w-3 mr-1" />
+                    {listing.max_attendees} places
+                  </span>
+                )}
+                {listing.speakers && listing.speakers.length > 0 && (
+                  <span className="flex items-center text-muted-foreground">
+                    <Mic2 className="h-3 w-3 mr-1" />
+                    {listing.speakers.length} intervenant(s)
                   </span>
                 )}
               </div>

@@ -60,6 +60,13 @@ import {
   CheckCircle,
   FileText,
   Building,
+  CalendarDays,
+  MapPinHouse,
+  Video,
+  Ticket,
+  PartyPopper,
+  Mic2,
+  Sparkles,
 } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { supabase } from "@/services/supabase";
@@ -68,7 +75,7 @@ import { toast } from "@/components/ui/use-toast";
 interface Category {
   id: string;
   name: string;
-  type: "product" | "property" | "job" | "service";
+  type: "product" | "property" | "job" | "service" | "event";
   icon: string;
 }
 
@@ -130,20 +137,40 @@ interface ListingFormData {
   languages?: string[];
   availability_start?: string;
   availability_end?: string;
+
+  // Champs événements
+  address?: string;
+  start_date?: string;
+  end_date?: string;
+  max_attendees?: string;
+  speakers?: string[];
+  organizer_name?: string;
+  website_url?: string;
+  registration_url?: string;
+  is_online?: boolean;
+  online_link?: string;
+  is_free?: boolean;
+  is_recurring?: boolean;
+  recurrence_pattern?: string;
 }
 
 const CreerAnnonce = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [listingType, setListingType] = useState<"product" | "property" | "job" | "service">("product");
-  
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null,
+  );
+  const [listingType, setListingType] = useState<
+    "product" | "property" | "job" | "service" | "event"
+  >("product");
+
   // États pour les inputs dynamiques
   const [skillsInput, setSkillsInput] = useState("");
   const [benefitsInput, setBenefitsInput] = useState("");
   const [certificationsInput, setCertificationsInput] = useState("");
   const [languagesInput, setLanguagesInput] = useState("");
+  const [speakersInput, setSpeakersInput] = useState("");
   const [tagInput, setTagInput] = useState("");
 
   const [formData, setFormData] = useState<ListingFormData>({
@@ -203,6 +230,21 @@ const CreerAnnonce = () => {
     languages: [],
     availability_start: "",
     availability_end: "",
+
+    // Événements
+    address: "",
+    start_date: "",
+    end_date: "",
+    max_attendees: "",
+    speakers: [],
+    organizer_name: "",
+    website_url: "",
+    registration_url: "",
+    is_online: false,
+    online_link: "",
+    is_free: false,
+    is_recurring: false,
+    recurrence_pattern: "none",
   });
 
   useEffect(() => {
@@ -295,7 +337,7 @@ const CreerAnnonce = () => {
   };
 
   const addArrayItem = (
-    field: "skills" | "benefits" | "certifications" | "languages",
+    field: "skills" | "benefits" | "certifications" | "languages" | "speakers",
     value: string,
   ) => {
     const currentArray = formData[field] || [];
@@ -312,7 +354,7 @@ const CreerAnnonce = () => {
   };
 
   const removeArrayItem = (
-    field: "skills" | "benefits" | "certifications" | "languages",
+    field: "skills" | "benefits" | "certifications" | "languages" | "speakers",
     item: string,
   ) => {
     setFormData((prev) => ({
@@ -389,9 +431,11 @@ const CreerAnnonce = () => {
         };
         const { error } = await supabase.from("products").insert([productData]);
         if (error) throw error;
-        toast({ title: "✅ Produit publié !", description: "Votre produit a été publié avec succès." });
-      } 
-      else if (listingType === "property") {
+        toast({
+          title: "✅ Produit publié !",
+          description: "Votre produit a été publié avec succès.",
+        });
+      } else if (listingType === "property") {
         const propertyData = {
           ...baseData,
           price: parseFloat(formData.price),
@@ -402,23 +446,33 @@ const CreerAnnonce = () => {
           property_type: formData.property_type || "apartment",
           floor: formData.floor || null,
           total_floors: formData.total_floors || null,
-          year_built: formData.year_built ? parseInt(formData.year_built) : null,
+          year_built: formData.year_built
+            ? parseInt(formData.year_built)
+            : null,
           parking: formData.parking || false,
           garden: formData.garden || false,
           swimming_pool: formData.swimming_pool || false,
           availability: "available",
         };
-        const { error } = await supabase.from("properties").insert([propertyData]);
+        const { error } = await supabase
+          .from("properties")
+          .insert([propertyData]);
         if (error) throw error;
-        toast({ title: "🏠 Propriété publiée !", description: "Votre propriété a été publiée avec succès." });
-      } 
-      else if (listingType === "job") {
+        toast({
+          title: "🏠 Propriété publiée !",
+          description: "Votre propriété a été publiée avec succès.",
+        });
+      } else if (listingType === "job") {
         const jobData = {
           ...baseData,
           company_name: formData.company_name || null,
           job_type: formData.job_type || "full-time",
-          salary_min: formData.salary_min ? parseFloat(formData.salary_min) : null,
-          salary_max: formData.salary_max ? parseFloat(formData.salary_max) : null,
+          salary_min: formData.salary_min
+            ? parseFloat(formData.salary_min)
+            : null,
+          salary_max: formData.salary_max
+            ? parseFloat(formData.salary_max)
+            : null,
           salary_negotiable: formData.salary_negotiable || false,
           experience_level: formData.experience_level || "entry",
           education_level: formData.education_level || "bachelor",
@@ -431,16 +485,20 @@ const CreerAnnonce = () => {
         };
         const { error } = await supabase.from("jobs").insert([jobData]);
         if (error) throw error;
-        toast({ title: "💼 Offre d'emploi publiée !", description: "Votre offre d'emploi a été publiée avec succès." });
-      } 
-      else if (listingType === "service") {
+        toast({
+          title: "💼 Offre d'emploi publiée !",
+          description: "Votre offre d'emploi a été publiée avec succès.",
+        });
+      } else if (listingType === "service") {
         const serviceData = {
           ...baseData,
           price: parseFloat(formData.price),
           price_type: formData.price_type || "fixed",
           delivery_type: formData.delivery_type || "both",
           duration: formData.duration || null,
-          experience_years: formData.experience_years ? parseInt(formData.experience_years) : null,
+          experience_years: formData.experience_years
+            ? parseInt(formData.experience_years)
+            : null,
           certifications: formData.certifications || [],
           languages: formData.languages || [],
           availability_start: formData.availability_start || null,
@@ -449,7 +507,41 @@ const CreerAnnonce = () => {
         };
         const { error } = await supabase.from("services").insert([serviceData]);
         if (error) throw error;
-        toast({ title: "🔧 Service publié !", description: "Votre service a été publié avec succès." });
+        toast({
+          title: "🔧 Service publié !",
+          description: "Votre service a été publié avec succès.",
+        });
+      } else if (listingType === "event") {
+        const eventData = {
+          ...baseData,
+          price: formData.is_free
+            ? 0
+            : formData.price
+              ? parseFloat(formData.price)
+              : null,
+          address: formData.address || null,
+          start_date: formData.start_date || null,
+          end_date: formData.end_date || null,
+          max_attendees: formData.max_attendees
+            ? parseInt(formData.max_attendees)
+            : null,
+          speakers: formData.speakers || [],
+          organizer_name: formData.organizer_name || null,
+          website_url: formData.website_url || null,
+          registration_url: formData.registration_url || null,
+          is_online: formData.is_online || false,
+          online_link: formData.online_link || null,
+          is_free: formData.is_free || false,
+          is_recurring: formData.is_recurring || false,
+          recurrence_pattern: formData.recurrence_pattern || "none",
+          status: "published",
+        };
+        const { error } = await supabase.from("events").insert([eventData]);
+        if (error) throw error;
+        toast({
+          title: "🎉 Événement publié !",
+          description: "Votre événement a été publié avec succès.",
+        });
       }
 
       navigate("/my-listings");
@@ -483,6 +575,9 @@ const CreerAnnonce = () => {
       "🛒": <ShoppingBag className="h-4 w-4" />,
       "🏠": <Home className="h-4 w-4" />,
       "🏢": <Building2 className="h-4 w-4" />,
+      "🎤": <Mic2 className="h-4 w-4" />,
+      "🎉": <PartyPopper className="h-4 w-4" />,
+      "🎭": <Sparkles className="h-4 w-4" />,
     };
     return iconMap[icon] || <Package className="h-4 w-4" />;
   };
@@ -492,7 +587,11 @@ const CreerAnnonce = () => {
     if (!formData.category_id) return false;
     if (!formData.title.trim()) return false;
     if (!formData.description.trim()) return false;
-    if (!formData.price || parseFloat(formData.price) <= 0) return false;
+    if (
+      listingType !== "event" &&
+      (!formData.price || parseFloat(formData.price) <= 0)
+    )
+      return false;
     if (!formData.location.trim()) return false;
     return true;
   };
@@ -503,7 +602,8 @@ const CreerAnnonce = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Créer une annonce</h1>
           <p className="text-muted-foreground">
-            Publiez ce que vous souhaitez vendre, louer, ou proposer comme service ou offre d'emploi
+            Publiez ce que vous souhaitez vendre, louer, ou proposer comme
+            service, offre d'emploi ou événement
           </p>
         </div>
 
@@ -513,7 +613,8 @@ const CreerAnnonce = () => {
             <CardHeader>
               <CardTitle>Informations de base</CardTitle>
               <CardDescription>
-                Sélectionnez une catégorie et remplissez les informations essentielles
+                Sélectionnez une catégorie et remplissez les informations
+                essentielles
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -533,42 +634,71 @@ const CreerAnnonce = () => {
                     <SelectValue placeholder="Sélectionnez une catégorie" />
                   </SelectTrigger>
                   <SelectContent>
-                    <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">📦 Produits</div>
-                    {categories.filter((c) => c.type === "product").map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        <div className="flex items-center gap-2">
-                          {getCategoryIcon(category.icon)}
-                          <span>{category.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                    <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground mt-2">🏠 Immobilier</div>
-                    {categories.filter((c) => c.type === "property").map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4" />
-                          <span>{category.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                    <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground mt-2">💼 Emplois</div>
-                    {categories.filter((c) => c.type === "job").map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        <div className="flex items-center gap-2">
-                          <Briefcase className="h-4 w-4" />
-                          <span>{category.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                    <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground mt-2">🔧 Services</div>
-                    {categories.filter((c) => c.type === "service").map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        <div className="flex items-center gap-2">
-                          <Wrench className="h-4 w-4" />
-                          <span>{category.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
+                    <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">
+                      📦 Produits
+                    </div>
+                    {categories
+                      .filter((c) => c.type === "product")
+                      .map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          <div className="flex items-center gap-2">
+                            {getCategoryIcon(category.icon)}
+                            <span>{category.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground mt-2">
+                      🏠 Immobilier
+                    </div>
+                    {categories
+                      .filter((c) => c.type === "property")
+                      .map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          <div className="flex items-center gap-2">
+                            <Building2 className="h-4 w-4" />
+                            <span>{category.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground mt-2">
+                      💼 Emplois
+                    </div>
+                    {categories
+                      .filter((c) => c.type === "job")
+                      .map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          <div className="flex items-center gap-2">
+                            <Briefcase className="h-4 w-4" />
+                            <span>{category.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground mt-2">
+                      🔧 Services
+                    </div>
+                    {categories
+                      .filter((c) => c.type === "service")
+                      .map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          <div className="flex items-center gap-2">
+                            <Wrench className="h-4 w-4" />
+                            <span>{category.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground mt-2">
+                      🎉 Événements
+                    </div>
+                    {categories
+                      .filter((c) => c.type === "event")
+                      .map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          <div className="flex items-center gap-2">
+                            <CalendarDays className="h-4 w-4" />
+                            <span>{category.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
                 {selectedCategory && (
@@ -584,7 +714,9 @@ const CreerAnnonce = () => {
                 <Input
                   id="title"
                   value={formData.title}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, title: e.target.value }))
+                  }
                   placeholder="Titre de votre annonce"
                   required
                 />
@@ -595,7 +727,12 @@ const CreerAnnonce = () => {
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                   placeholder="Décrivez votre annonce en détail..."
                   rows={5}
                   required
@@ -612,18 +749,34 @@ const CreerAnnonce = () => {
                       min="0"
                       step="0.01"
                       value={formData.price}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          price: e.target.value,
+                        }))
+                      }
                       placeholder="0.00"
-                      required
+                      required={listingType !== "event"}
                       className="pl-7"
                     />
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">€</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                      €
+                    </span>
                   </div>
                   {listingType === "property" && (
-                    <p className="text-xs text-muted-foreground">Prix de vente ou loyer mensuel</p>
+                    <p className="text-xs text-muted-foreground">
+                      Prix de vente ou loyer mensuel
+                    </p>
                   )}
                   {listingType === "service" && (
-                    <p className="text-xs text-muted-foreground">Tarif de base pour votre service</p>
+                    <p className="text-xs text-muted-foreground">
+                      Tarif de base pour votre service
+                    </p>
+                  )}
+                  {listingType === "event" && (
+                    <p className="text-xs text-muted-foreground">
+                      Prix d'entrée (0 = gratuit)
+                    </p>
                   )}
                 </div>
 
@@ -632,7 +785,12 @@ const CreerAnnonce = () => {
                   <Input
                     id="location"
                     value={formData.location}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, location: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        location: e.target.value,
+                      }))
+                    }
                     placeholder="Ville, quartier"
                     required
                   />
@@ -641,7 +799,10 @@ const CreerAnnonce = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="contact_phone" className="flex items-center gap-1">
+                  <Label
+                    htmlFor="contact_phone"
+                    className="flex items-center gap-1"
+                  >
                     <Phone className="h-3 w-3" />
                     Téléphone de contact
                   </Label>
@@ -649,12 +810,20 @@ const CreerAnnonce = () => {
                     id="contact_phone"
                     type="tel"
                     value={formData.contact_phone || ""}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, contact_phone: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        contact_phone: e.target.value,
+                      }))
+                    }
                     placeholder="Optionnel"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="contact_email" className="flex items-center gap-1">
+                  <Label
+                    htmlFor="contact_email"
+                    className="flex items-center gap-1"
+                  >
                     <Mail className="h-3 w-3" />
                     Email de contact
                   </Label>
@@ -662,7 +831,12 @@ const CreerAnnonce = () => {
                     id="contact_email"
                     type="email"
                     value={formData.contact_email || ""}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, contact_email: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        contact_email: e.target.value,
+                      }))
+                    }
                     placeholder="Optionnel"
                   />
                 </div>
@@ -670,9 +844,7 @@ const CreerAnnonce = () => {
             </CardContent>
           </Card>
 
-          {/* ============================================ */}
-          {/* SECTION PRODUITS - AFFICHÉE UNIQUEMENT POUR LES PRODUITS */}
-          {/* ============================================ */}
+          {/* SECTION PRODUITS */}
           {selectedCategory && listingType === "product" && (
             <Card>
               <CardHeader>
@@ -680,7 +852,9 @@ const CreerAnnonce = () => {
                   <Package className="h-5 w-5" />
                   Détails du produit
                 </CardTitle>
-                <CardDescription>Informations spécifiques à votre produit</CardDescription>
+                <CardDescription>
+                  Informations spécifiques à votre produit
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -688,15 +862,23 @@ const CreerAnnonce = () => {
                     <Label htmlFor="condition">État</Label>
                     <Select
                       value={formData.condition}
-                      onValueChange={(value) => setFormData((prev) => ({ ...prev, condition: value }))}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, condition: value }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="new">🆕 Neuf (jamais utilisé)</SelectItem>
-                        <SelectItem value="used">🔄 Occasion (bon état)</SelectItem>
-                        <SelectItem value="refurbished">🔧 Reconditionné</SelectItem>
+                        <SelectItem value="new">
+                          🆕 Neuf (jamais utilisé)
+                        </SelectItem>
+                        <SelectItem value="used">
+                          🔄 Occasion (bon état)
+                        </SelectItem>
+                        <SelectItem value="refurbished">
+                          🔧 Reconditionné
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -707,7 +889,12 @@ const CreerAnnonce = () => {
                       type="number"
                       min="1"
                       value={formData.stock}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, stock: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          stock: e.target.value,
+                        }))
+                      }
                     />
                   </div>
                 </div>
@@ -717,7 +904,12 @@ const CreerAnnonce = () => {
                     <Input
                       id="brand"
                       value={formData.brand || ""}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, brand: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          brand: e.target.value,
+                        }))
+                      }
                       placeholder="Ex: Apple, Samsung, Nike..."
                     />
                   </div>
@@ -726,7 +918,12 @@ const CreerAnnonce = () => {
                     <Input
                       id="model"
                       value={formData.model || ""}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, model: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          model: e.target.value,
+                        }))
+                      }
                       placeholder="Ex: iPhone 15 Pro, Air Max..."
                     />
                   </div>
@@ -737,7 +934,12 @@ const CreerAnnonce = () => {
                     <Input
                       id="color"
                       value={formData.color || ""}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, color: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          color: e.target.value,
+                        }))
+                      }
                       placeholder="Ex: Noir, Blanc, Bleu..."
                     />
                   </div>
@@ -746,7 +948,12 @@ const CreerAnnonce = () => {
                     <Input
                       id="warranty"
                       value={formData.warranty || ""}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, warranty: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          warranty: e.target.value,
+                        }))
+                      }
                       placeholder="Ex: 1 an, 6 mois..."
                     />
                   </div>
@@ -755,7 +962,9 @@ const CreerAnnonce = () => {
                   <Switch
                     id="negotiable"
                     checked={formData.negotiable}
-                    onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, negotiable: checked }))}
+                    onCheckedChange={(checked) =>
+                      setFormData((prev) => ({ ...prev, negotiable: checked }))
+                    }
                   />
                   <Label htmlFor="negotiable">💰 Prix négociable</Label>
                 </div>
@@ -763,9 +972,7 @@ const CreerAnnonce = () => {
             </Card>
           )}
 
-          {/* ============================================ */}
-          {/* SECTION PROPRIÉTÉS - AFFICHÉE UNIQUEMENT POUR L'IMMOBILIER */}
-          {/* ============================================ */}
+          {/* SECTION PROPRIÉTÉS */}
           {selectedCategory && listingType === "property" && (
             <Card>
               <CardHeader>
@@ -773,7 +980,9 @@ const CreerAnnonce = () => {
                   <Home className="h-5 w-5" />
                   Détails de la propriété
                 </CardTitle>
-                <CardDescription>Informations spécifiques à votre bien immobilier</CardDescription>
+                <CardDescription>
+                  Informations spécifiques à votre bien immobilier
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -781,18 +990,29 @@ const CreerAnnonce = () => {
                     <Label htmlFor="property_type">Type de bien</Label>
                     <Select
                       value={formData.property_type}
-                      onValueChange={(value) => setFormData((prev) => ({ ...prev, property_type: value }))}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          property_type: value,
+                        }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="apartment">🏢 Appartement</SelectItem>
+                        <SelectItem value="apartment">
+                          🏢 Appartement
+                        </SelectItem>
                         <SelectItem value="house">🏠 Maison</SelectItem>
                         <SelectItem value="villa">🏛️ Villa</SelectItem>
-                        <SelectItem value="commercial">🏪 Local commercial</SelectItem>
+                        <SelectItem value="commercial">
+                          🏪 Local commercial
+                        </SelectItem>
                         <SelectItem value="land">🌱 Terrain</SelectItem>
-                        <SelectItem value="townhouse">🏘️ Maison de ville</SelectItem>
+                        <SelectItem value="townhouse">
+                          🏘️ Maison de ville
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -803,7 +1023,12 @@ const CreerAnnonce = () => {
                       type="number"
                       min="0"
                       value={formData.bedrooms}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, bedrooms: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          bedrooms: e.target.value,
+                        }))
+                      }
                       placeholder="Nombre de chambres"
                     />
                   </div>
@@ -814,7 +1039,12 @@ const CreerAnnonce = () => {
                       type="number"
                       min="0"
                       value={formData.bathrooms}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, bathrooms: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          bathrooms: e.target.value,
+                        }))
+                      }
                       placeholder="Nombre de salles de bain"
                     />
                   </div>
@@ -827,7 +1057,12 @@ const CreerAnnonce = () => {
                       type="number"
                       min="0"
                       value={formData.area_sqft}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, area_sqft: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          area_sqft: e.target.value,
+                        }))
+                      }
                       placeholder="Surface habitable"
                     />
                   </div>
@@ -839,7 +1074,12 @@ const CreerAnnonce = () => {
                       min="1800"
                       max={new Date().getFullYear()}
                       value={formData.year_built || ""}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, year_built: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          year_built: e.target.value,
+                        }))
+                      }
                       placeholder="Ex: 2020"
                     />
                   </div>
@@ -850,16 +1090,28 @@ const CreerAnnonce = () => {
                     <Input
                       id="floor"
                       value={formData.floor || ""}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, floor: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          floor: e.target.value,
+                        }))
+                      }
                       placeholder="Ex: 3ème étage"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="total_floors">🏗️ Nombre total d'étages</Label>
+                    <Label htmlFor="total_floors">
+                      🏗️ Nombre total d'étages
+                    </Label>
                     <Input
                       id="total_floors"
                       value={formData.total_floors || ""}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, total_floors: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          total_floors: e.target.value,
+                        }))
+                      }
                       placeholder="Ex: 5 étages"
                     />
                   </div>
@@ -871,7 +1123,12 @@ const CreerAnnonce = () => {
                       <Switch
                         id="furnished"
                         checked={formData.furnished}
-                        onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, furnished: checked }))}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            furnished: checked,
+                          }))
+                        }
                       />
                       <Label htmlFor="furnished">🛋️ Meublé</Label>
                     </div>
@@ -879,7 +1136,9 @@ const CreerAnnonce = () => {
                       <Switch
                         id="parking"
                         checked={formData.parking}
-                        onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, parking: checked }))}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({ ...prev, parking: checked }))
+                        }
                       />
                       <Label htmlFor="parking">🅿️ Parking</Label>
                     </div>
@@ -887,7 +1146,9 @@ const CreerAnnonce = () => {
                       <Switch
                         id="garden"
                         checked={formData.garden}
-                        onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, garden: checked }))}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({ ...prev, garden: checked }))
+                        }
                       />
                       <Label htmlFor="garden">🌳 Jardin</Label>
                     </div>
@@ -895,7 +1156,12 @@ const CreerAnnonce = () => {
                       <Switch
                         id="swimming_pool"
                         checked={formData.swimming_pool}
-                        onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, swimming_pool: checked }))}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            swimming_pool: checked,
+                          }))
+                        }
                       />
                       <Label htmlFor="swimming_pool">🏊 Piscine</Label>
                     </div>
@@ -905,9 +1171,7 @@ const CreerAnnonce = () => {
             </Card>
           )}
 
-          {/* ============================================ */}
-          {/* SECTION EMPLOIS - AFFICHÉE UNIQUEMENT POUR LES OFFRES D'EMPLOI */}
-          {/* ============================================ */}
+          {/* SECTION EMPLOIS */}
           {selectedCategory && listingType === "job" && (
             <Card>
               <CardHeader>
@@ -915,7 +1179,9 @@ const CreerAnnonce = () => {
                   <Briefcase className="h-5 w-5" />
                   Détails de l'offre d'emploi
                 </CardTitle>
-                <CardDescription>Informations spécifiques au poste à pourvoir</CardDescription>
+                <CardDescription>
+                  Informations spécifiques au poste à pourvoir
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -923,7 +1189,12 @@ const CreerAnnonce = () => {
                   <Input
                     id="company_name"
                     value={formData.company_name || ""}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, company_name: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        company_name: e.target.value,
+                      }))
+                    }
                     placeholder="Nom de votre entreprise"
                   />
                 </div>
@@ -933,36 +1204,61 @@ const CreerAnnonce = () => {
                     <Label htmlFor="job_type">📋 Type de contrat</Label>
                     <Select
                       value={formData.job_type}
-                      onValueChange={(value) => setFormData((prev) => ({ ...prev, job_type: value }))}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, job_type: value }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="full-time">💼 CDI - Temps plein</SelectItem>
-                        <SelectItem value="part-time">⏰ CDD - Temps partiel</SelectItem>
-                        <SelectItem value="freelance">🎯 Freelance / Indépendant</SelectItem>
+                        <SelectItem value="full-time">
+                          💼 CDI - Temps plein
+                        </SelectItem>
+                        <SelectItem value="part-time">
+                          ⏰ CDD - Temps partiel
+                        </SelectItem>
+                        <SelectItem value="freelance">
+                          🎯 Freelance / Indépendant
+                        </SelectItem>
                         <SelectItem value="internship">📚 Stage</SelectItem>
-                        <SelectItem value="apprenticeship">🤝 Alternance</SelectItem>
+                        <SelectItem value="apprenticeship">
+                          🤝 Alternance
+                        </SelectItem>
                         <SelectItem value="remote">🏠 Télétravail</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="experience_level">⭐ Niveau d'expérience requis</Label>
+                    <Label htmlFor="experience_level">
+                      ⭐ Niveau d'expérience requis
+                    </Label>
                     <Select
                       value={formData.experience_level}
-                      onValueChange={(value) => setFormData((prev) => ({ ...prev, experience_level: value }))}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          experience_level: value,
+                        }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="entry">🌱 Débutant (0-2 ans)</SelectItem>
-                        <SelectItem value="junior">📈 Junior (2-4 ans)</SelectItem>
-                        <SelectItem value="senior">🏆 Senior (5-8 ans)</SelectItem>
-                        <SelectItem value="expert">👑 Expert (8+ ans)</SelectItem>
+                        <SelectItem value="entry">
+                          🌱 Débutant (0-2 ans)
+                        </SelectItem>
+                        <SelectItem value="junior">
+                          📈 Junior (2-4 ans)
+                        </SelectItem>
+                        <SelectItem value="senior">
+                          🏆 Senior (5-8 ans)
+                        </SelectItem>
+                        <SelectItem value="expert">
+                          👑 Expert (8+ ans)
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -970,24 +1266,38 @@ const CreerAnnonce = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="salary_min">💰 Salaire minimum (€/mois)</Label>
+                    <Label htmlFor="salary_min">
+                      💰 Salaire minimum (€/mois)
+                    </Label>
                     <Input
                       id="salary_min"
                       type="number"
                       min="0"
                       value={formData.salary_min}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, salary_min: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          salary_min: e.target.value,
+                        }))
+                      }
                       placeholder="Ex: 2500"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="salary_max">💰 Salaire maximum (€/mois)</Label>
+                    <Label htmlFor="salary_max">
+                      💰 Salaire maximum (€/mois)
+                    </Label>
                     <Input
                       id="salary_max"
                       type="number"
                       min="0"
                       value={formData.salary_max}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, salary_max: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          salary_max: e.target.value,
+                        }))
+                      }
                       placeholder="Ex: 3500"
                     />
                   </div>
@@ -998,33 +1308,53 @@ const CreerAnnonce = () => {
                     <Switch
                       id="salary_negotiable"
                       checked={formData.salary_negotiable}
-                      onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, salary_negotiable: checked }))}
+                      onCheckedChange={(checked) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          salary_negotiable: checked,
+                        }))
+                      }
                     />
-                    <Label htmlFor="salary_negotiable">💬 Salaire négociable</Label>
+                    <Label htmlFor="salary_negotiable">
+                      💬 Salaire négociable
+                    </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Switch
                       id="is_remote"
                       checked={formData.is_remote}
-                      onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, is_remote: checked }))}
+                      onCheckedChange={(checked) =>
+                        setFormData((prev) => ({ ...prev, is_remote: checked }))
+                      }
                     />
                     <Label htmlFor="is_remote">🏠 Télétravail possible</Label>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="education_level">🎓 Niveau d'études requis</Label>
+                  <Label htmlFor="education_level">
+                    🎓 Niveau d'études requis
+                  </Label>
                   <Select
                     value={formData.education_level}
-                    onValueChange={(value) => setFormData((prev) => ({ ...prev, education_level: value }))}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        education_level: value,
+                      }))
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">Aucun diplôme requis</SelectItem>
-                      <SelectItem value="high-school">📜 Baccalauréat</SelectItem>
-                      <SelectItem value="bachelor">🎓 Licence / Bachelor</SelectItem>
+                      <SelectItem value="high-school">
+                        📜 Baccalauréat
+                      </SelectItem>
+                      <SelectItem value="bachelor">
+                        🎓 Licence / Bachelor
+                      </SelectItem>
                       <SelectItem value="master">📖 Master / Bac+5</SelectItem>
                       <SelectItem value="phd">🏅 Doctorat</SelectItem>
                     </SelectContent>
@@ -1038,9 +1368,16 @@ const CreerAnnonce = () => {
                   </Label>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {formData.skills?.map((skill, index) => (
-                      <div key={index} className="flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                      <div
+                        key={index}
+                        className="flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                      >
                         <span>{skill}</span>
-                        <button type="button" onClick={() => removeArrayItem("skills", skill)} className="ml-1 hover:text-blue-600">
+                        <button
+                          type="button"
+                          onClick={() => removeArrayItem("skills", skill)}
+                          className="ml-1 hover:text-blue-600"
+                        >
                           <X className="h-3 w-3" />
                         </button>
                       </div>
@@ -1059,10 +1396,14 @@ const CreerAnnonce = () => {
                         }
                       }}
                     />
-                    <Button type="button" variant="outline" onClick={() => {
-                      addArrayItem("skills", skillsInput);
-                      setSkillsInput("");
-                    }}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        addArrayItem("skills", skillsInput);
+                        setSkillsInput("");
+                      }}
+                    >
                       Ajouter
                     </Button>
                   </div>
@@ -1075,9 +1416,16 @@ const CreerAnnonce = () => {
                   </Label>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {formData.benefits?.map((benefit, index) => (
-                      <div key={index} className="flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                      <div
+                        key={index}
+                        className="flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
+                      >
                         <span>{benefit}</span>
-                        <button type="button" onClick={() => removeArrayItem("benefits", benefit)} className="ml-1 hover:text-green-600">
+                        <button
+                          type="button"
+                          onClick={() => removeArrayItem("benefits", benefit)}
+                          className="ml-1 hover:text-green-600"
+                        >
                           <X className="h-3 w-3" />
                         </button>
                       </div>
@@ -1096,10 +1444,14 @@ const CreerAnnonce = () => {
                         }
                       }}
                     />
-                    <Button type="button" variant="outline" onClick={() => {
-                      addArrayItem("benefits", benefitsInput);
-                      setBenefitsInput("");
-                    }}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        addArrayItem("benefits", benefitsInput);
+                        setBenefitsInput("");
+                      }}
+                    >
                       Ajouter
                     </Button>
                   </div>
@@ -1107,7 +1459,10 @@ const CreerAnnonce = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="application_deadline" className="flex items-center gap-2">
+                    <Label
+                      htmlFor="application_deadline"
+                      className="flex items-center gap-2"
+                    >
                       <Calendar className="h-4 w-4" />
                       📅 Date limite de candidature
                     </Label>
@@ -1115,11 +1470,19 @@ const CreerAnnonce = () => {
                       id="application_deadline"
                       type="date"
                       value={formData.application_deadline || ""}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, application_deadline: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          application_deadline: e.target.value,
+                        }))
+                      }
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="application_url" className="flex items-center gap-2">
+                    <Label
+                      htmlFor="application_url"
+                      className="flex items-center gap-2"
+                    >
                       <Globe className="h-4 w-4" />
                       🔗 Lien de candidature
                     </Label>
@@ -1127,7 +1490,12 @@ const CreerAnnonce = () => {
                       id="application_url"
                       type="url"
                       value={formData.application_url || ""}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, application_url: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          application_url: e.target.value,
+                        }))
+                      }
                       placeholder="https://..."
                     />
                   </div>
@@ -1136,9 +1504,7 @@ const CreerAnnonce = () => {
             </Card>
           )}
 
-          {/* ============================================ */}
-          {/* SECTION SERVICES - AFFICHÉE UNIQUEMENT POUR LES SERVICES */}
-          {/* ============================================ */}
+          {/* SECTION SERVICES */}
           {selectedCategory && listingType === "service" && (
             <Card>
               <CardHeader>
@@ -1146,7 +1512,9 @@ const CreerAnnonce = () => {
                   <Wrench className="h-5 w-5" />
                   Détails du service
                 </CardTitle>
-                <CardDescription>Informations spécifiques à votre prestation de service</CardDescription>
+                <CardDescription>
+                  Informations spécifiques à votre prestation de service
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1154,7 +1522,9 @@ const CreerAnnonce = () => {
                     <Label htmlFor="price_type">💰 Type de tarification</Label>
                     <Select
                       value={formData.price_type}
-                      onValueChange={(value) => setFormData((prev) => ({ ...prev, price_type: value }))}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, price_type: value }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -1174,14 +1544,23 @@ const CreerAnnonce = () => {
                     <Label htmlFor="delivery_type">📦 Mode de prestation</Label>
                     <Select
                       value={formData.delivery_type}
-                      onValueChange={(value) => setFormData((prev) => ({ ...prev, delivery_type: value }))}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          delivery_type: value,
+                        }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="online">💻 En ligne uniquement</SelectItem>
-                        <SelectItem value="onsite">📍 Sur place uniquement</SelectItem>
+                        <SelectItem value="online">
+                          💻 En ligne uniquement
+                        </SelectItem>
+                        <SelectItem value="onsite">
+                          📍 Sur place uniquement
+                        </SelectItem>
                         <SelectItem value="both">🔄 Les deux</SelectItem>
                         <SelectItem value="remote">🏠 À distance</SelectItem>
                       </SelectContent>
@@ -1195,18 +1574,30 @@ const CreerAnnonce = () => {
                     <Input
                       id="duration"
                       value={formData.duration || ""}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, duration: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          duration: e.target.value,
+                        }))
+                      }
                       placeholder="Ex: 2 heures, 1 journée..."
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="experience_years">⭐ Années d'expérience</Label>
+                    <Label htmlFor="experience_years">
+                      ⭐ Années d'expérience
+                    </Label>
                     <Input
                       id="experience_years"
                       type="number"
                       min="0"
                       value={formData.experience_years || ""}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, experience_years: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          experience_years: e.target.value,
+                        }))
+                      }
                       placeholder="Ex: 5"
                     />
                   </div>
@@ -1214,7 +1605,10 @@ const CreerAnnonce = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="availability_start" className="flex items-center gap-2">
+                    <Label
+                      htmlFor="availability_start"
+                      className="flex items-center gap-2"
+                    >
                       <Clock className="h-4 w-4" />
                       🕐 Disponibilité début
                     </Label>
@@ -1222,11 +1616,19 @@ const CreerAnnonce = () => {
                       id="availability_start"
                       type="time"
                       value={formData.availability_start || ""}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, availability_start: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          availability_start: e.target.value,
+                        }))
+                      }
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="availability_end" className="flex items-center gap-2">
+                    <Label
+                      htmlFor="availability_end"
+                      className="flex items-center gap-2"
+                    >
                       <Clock className="h-4 w-4" />
                       🕘 Disponibilité fin
                     </Label>
@@ -1234,7 +1636,12 @@ const CreerAnnonce = () => {
                       id="availability_end"
                       type="time"
                       value={formData.availability_end || ""}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, availability_end: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          availability_end: e.target.value,
+                        }))
+                      }
                     />
                   </div>
                 </div>
@@ -1246,9 +1653,18 @@ const CreerAnnonce = () => {
                   </Label>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {formData.certifications?.map((cert, index) => (
-                      <div key={index} className="flex items-center gap-1 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
+                      <div
+                        key={index}
+                        className="flex items-center gap-1 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm"
+                      >
                         <span>{cert}</span>
-                        <button type="button" onClick={() => removeArrayItem("certifications", cert)} className="ml-1 hover:text-purple-600">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            removeArrayItem("certifications", cert)
+                          }
+                          className="ml-1 hover:text-purple-600"
+                        >
                           <X className="h-3 w-3" />
                         </button>
                       </div>
@@ -1267,10 +1683,14 @@ const CreerAnnonce = () => {
                         }
                       }}
                     />
-                    <Button type="button" variant="outline" onClick={() => {
-                      addArrayItem("certifications", certificationsInput);
-                      setCertificationsInput("");
-                    }}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        addArrayItem("certifications", certificationsInput);
+                        setCertificationsInput("");
+                      }}
+                    >
                       Ajouter
                     </Button>
                   </div>
@@ -1283,9 +1703,16 @@ const CreerAnnonce = () => {
                   </Label>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {formData.languages?.map((lang, index) => (
-                      <div key={index} className="flex items-center gap-1 bg-cyan-100 text-cyan-800 px-3 py-1 rounded-full text-sm">
+                      <div
+                        key={index}
+                        className="flex items-center gap-1 bg-cyan-100 text-cyan-800 px-3 py-1 rounded-full text-sm"
+                      >
                         <span>{lang}</span>
-                        <button type="button" onClick={() => removeArrayItem("languages", lang)} className="ml-1 hover:text-cyan-600">
+                        <button
+                          type="button"
+                          onClick={() => removeArrayItem("languages", lang)}
+                          className="ml-1 hover:text-cyan-600"
+                        >
                           <X className="h-3 w-3" />
                         </button>
                       </div>
@@ -1304,13 +1731,352 @@ const CreerAnnonce = () => {
                         }
                       }}
                     />
-                    <Button type="button" variant="outline" onClick={() => {
-                      addArrayItem("languages", languagesInput);
-                      setLanguagesInput("");
-                    }}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        addArrayItem("languages", languagesInput);
+                        setLanguagesInput("");
+                      }}
+                    >
                       Ajouter
                     </Button>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* SECTION ÉVÉNEMENTS - NOUVELLE SECTION */}
+          {selectedCategory && listingType === "event" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CalendarDays className="h-5 w-5" />
+                  Détails de l'événement
+                </CardTitle>
+                <CardDescription>
+                  Informations spécifiques à votre événement
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Adresse complète */}
+                <div className="space-y-2">
+                  <Label htmlFor="address" className="flex items-center gap-2">
+                    <MapPinHouse className="h-4 w-4" />
+                    Adresse complète
+                  </Label>
+                  <Input
+                    id="address"
+                    value={formData.address || ""}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        address: e.target.value,
+                      }))
+                    }
+                    placeholder="Adresse exacte de l'événement"
+                  />
+                </div>
+
+                {/* Dates et heures */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="start_date"
+                      className="flex items-center gap-2"
+                    >
+                      <Calendar className="h-4 w-4" />
+                      Date et heure de début *
+                    </Label>
+                    <Input
+                      id="start_date"
+                      type="datetime-local"
+                      value={formData.start_date || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          start_date: e.target.value,
+                        }))
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="end_date"
+                      className="flex items-center gap-2"
+                    >
+                      <Calendar className="h-4 w-4" />
+                      Date et heure de fin
+                    </Label>
+                    <Input
+                      id="end_date"
+                      type="datetime-local"
+                      value={formData.end_date || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          end_date: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Capacité et organisation */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="max_attendees"
+                      className="flex items-center gap-2"
+                    >
+                      <Users className="h-4 w-4" />
+                      Capacité maximale
+                    </Label>
+                    <Input
+                      id="max_attendees"
+                      type="number"
+                      min="1"
+                      value={formData.max_attendees || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          max_attendees: e.target.value,
+                        }))
+                      }
+                      placeholder="Nombre maximum de participants"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="organizer_name"
+                      className="flex items-center gap-2"
+                    >
+                      <Building className="h-4 w-4" />
+                      Nom de l'organisateur
+                    </Label>
+                    <Input
+                      id="organizer_name"
+                      value={formData.organizer_name || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          organizer_name: e.target.value,
+                        }))
+                      }
+                      placeholder="Organisateur de l'événement"
+                    />
+                  </div>
+                </div>
+
+                {/* Intervenants */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Mic2 className="h-4 w-4" />
+                    Intervenants / Speakers
+                  </Label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {formData.speakers?.map((speaker, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-1 bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm"
+                      >
+                        <span>{speaker}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeArrayItem("speakers", speaker)}
+                          className="ml-1 hover:text-amber-600"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Ajouter un intervenant (ex: Jean Dupont, Expert en...)"
+                      value={speakersInput}
+                      onChange={(e) => setSpeakersInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addArrayItem("speakers", speakersInput);
+                          setSpeakersInput("");
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        addArrayItem("speakers", speakersInput);
+                        setSpeakersInput("");
+                      }}
+                    >
+                      Ajouter
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Liens */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="website_url"
+                      className="flex items-center gap-2"
+                    >
+                      <Globe className="h-4 w-4" />
+                      Site web de l'événement
+                    </Label>
+                    <Input
+                      id="website_url"
+                      type="url"
+                      value={formData.website_url || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          website_url: e.target.value,
+                        }))
+                      }
+                      placeholder="https://..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="registration_url"
+                      className="flex items-center gap-2"
+                    >
+                      <Ticket className="h-4 w-4" />
+                      Lien d'inscription
+                    </Label>
+                    <Input
+                      id="registration_url"
+                      type="url"
+                      value={formData.registration_url || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          registration_url: e.target.value,
+                        }))
+                      }
+                      placeholder="Lien pour s'inscrire"
+                    />
+                  </div>
+                </div>
+
+                {/* Options */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <Label className="flex items-center gap-2">
+                      <Video className="h-4 w-4" />
+                      Options en ligne
+                    </Label>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="is_online"
+                        checked={formData.is_online}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            is_online: checked,
+                          }))
+                        }
+                      />
+                      <Label htmlFor="is_online">🌐 Événement en ligne</Label>
+                    </div>
+                    {formData.is_online && (
+                      <div className="space-y-2 mt-2">
+                        <Label htmlFor="online_link">Lien pour rejoindre</Label>
+                        <Input
+                          id="online_link"
+                          type="url"
+                          value={formData.online_link || ""}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              online_link: e.target.value,
+                            }))
+                          }
+                          placeholder="https://zoom.us/..."
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4" />
+                      Tarification
+                    </Label>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="is_free"
+                        checked={formData.is_free}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({ ...prev, is_free: checked }))
+                        }
+                      />
+                      <Label htmlFor="is_free">🎟️ Événement gratuit</Label>
+                    </div>
+                    {formData.is_free && (
+                      <p className="text-xs text-green-600 mt-1">
+                        Le prix sera automatiquement mis à 0€
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Récurrence */}
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4" />
+                    Récurrence
+                  </Label>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="is_recurring"
+                      checked={formData.is_recurring}
+                      onCheckedChange={(checked) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          is_recurring: checked,
+                        }))
+                      }
+                    />
+                    <Label htmlFor="is_recurring">🔄 Événement récurrent</Label>
+                  </div>
+                  {formData.is_recurring && (
+                    <div className="mt-2">
+                      <Select
+                        value={formData.recurrence_pattern}
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            recurrence_pattern: value,
+                          }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Fréquence de récurrence" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="daily">
+                            📅 Tous les jours
+                          </SelectItem>
+                          <SelectItem value="weekly">
+                            📅 Toutes les semaines
+                          </SelectItem>
+                          <SelectItem value="monthly">
+                            📅 Tous les mois
+                          </SelectItem>
+                          <SelectItem value="yearly">
+                            📅 Tous les ans
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1326,7 +2092,11 @@ const CreerAnnonce = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {formData.imagePreviews.map((preview, index) => (
                   <div key={index} className="relative group">
-                    <img src={preview} alt={`Aperçu ${index + 1}`} className="w-full h-32 object-cover rounded-lg" />
+                    <img
+                      src={preview}
+                      alt={`Aperçu ${index + 1}`}
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
                     <button
                       type="button"
                       onClick={() => removeImage(index)}
@@ -1340,13 +2110,23 @@ const CreerAnnonce = () => {
                   <label className="cursor-pointer">
                     <div className="w-full h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center hover:border-primary transition-colors">
                       <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                      <span className="text-sm text-muted-foreground">Ajouter</span>
+                      <span className="text-sm text-muted-foreground">
+                        Ajouter
+                      </span>
                     </div>
-                    <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
                   </label>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground mt-4">{formData.images.length} / 10 photos</p>
+              <p className="text-sm text-muted-foreground mt-4">
+                {formData.images.length} / 10 photos
+              </p>
             </CardContent>
           </Card>
 
@@ -1357,15 +2137,24 @@ const CreerAnnonce = () => {
                 <Tag className="h-5 w-5" />
                 🏷️ Mots-clés
               </CardTitle>
-              <CardDescription>Ajoutez des mots-clés pour faciliter la recherche</CardDescription>
+              <CardDescription>
+                Ajoutez des mots-clés pour faciliter la recherche
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2 mb-4">
                 {formData.tags.map((tag, index) => (
-                  <div key={index} className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
+                  <div
+                    key={index}
+                    className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm"
+                  >
                     <Hash className="h-3 w-3" />
                     {tag}
-                    <button type="button" onClick={() => removeTag(tag)} className="ml-1">
+                    <button
+                      type="button"
+                      onClick={() => removeTag(tag)}
+                      className="ml-1"
+                    >
                       <X className="h-3 w-3" />
                     </button>
                   </div>
@@ -1401,7 +2190,12 @@ const CreerAnnonce = () => {
 
           {/* Boutons */}
           <div className="flex justify-end gap-4 pt-6 border-t">
-            <Button type="button" variant="outline" onClick={() => navigate("/dashboard")} disabled={loading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate("/dashboard")}
+              disabled={loading}
+            >
               Annuler
             </Button>
             <Button

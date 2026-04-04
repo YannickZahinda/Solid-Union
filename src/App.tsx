@@ -29,6 +29,9 @@ import AdminListings from "./pages/AdminListings";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminSettings from "./pages/AdminSettings";
 import Recommendations from "./pages/Recommandations";
+import Jobs from "./pages/jobs/Jobs";
+import Services from "./pages/services/Services";
+import Events from "./pages/events/Events";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +47,9 @@ const App = () => (
         <Route path="/signup" element={<Signup />} />
         <Route path="/products" element={<Products />} />
         <Route path="/properties" element={<Properties />} />
+        <Route path="/jobs" element={<Jobs />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/events" element={<Events />} />
         <Route path="/about" element={<About />} />
 
         {/* Routes protégées - Utilisateurs */}
