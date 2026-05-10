@@ -57,12 +57,16 @@ import {
 import { supabase } from "@/services/supabase";
 import { toast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Lock } from "lucide-react";
+import { useSubscription } from "@/hooks/useSubscription";
+import SubscriptionModal from "@/components/subscription/SubscriptionModal";
 
 interface Property {
   id: string;
   title: string;
   description: string;
   price: number;
+  is_offered: boolean;
   location: string;
   bedrooms: number | null;
   bathrooms: number | null;
@@ -103,6 +107,8 @@ const Properties = () => {
   const [priceRange, setPriceRange] = useState("any");
   const [minBedrooms, setMinBedrooms] = useState("any");
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
+  const [showSubModal, setShowSubModal] = useState(false);
+  const { isSubscribed, refetch: refetchSub } = useSubscription();
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(
     null
@@ -480,7 +486,11 @@ const Properties = () => {
                         className="w-full h-48 md:h-full object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
                         onClick={() => handleViewDetails(property)}
                       />
-                      {property.availability === "available" ? (
+                      {property.is_offered ? (
+                        <Badge className="absolute top-2 left-2 bg-green-600 text-white">
+                          🎁 Offert
+                        </Badge>
+                      ) : property.availability === "available" ? (
                         <Badge className="absolute top-2 left-2 bg-green-500">
                           Disponible
                         </Badge>
@@ -506,12 +516,20 @@ const Properties = () => {
                             {property.title}
                           </h3>
                           <div className="text-right ml-2">
-                            <span className="text-2xl font-bold text-green-600 dark:text-green-500">
-                              {formatPrice(property.price)}
-                            </span>
-                            <span className="text-sm text-gray-500 block">
-                              /mois
-                            </span>
+                            {property.is_offered ? (
+                              <span className="text-2xl font-bold text-green-600 dark:text-green-400">
+                                GRATUIT
+                              </span>
+                            ) : (
+                              <>
+                                <span className="text-2xl font-bold text-green-600 dark:text-green-500">
+                                  {formatPrice(property.price)}
+                                </span>
+                                <span className="text-sm text-gray-500 block">
+                                  /mois
+                                </span>
+                              </>
+                            )}
                           </div>
                         </div>
 
@@ -942,9 +960,24 @@ const Properties = () => {
                           </span>
                         </div>
                         {selectedProperty.profiles?.phone && (
-                          <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
-                            <Phone className="h-4 w-4" />
-                            <span>{selectedProperty.profiles.phone}</span>
+                          <div className="mt-1">
+                            {isSubscribed ? (
+                              <a
+                                href={`tel:${selectedProperty.profiles.phone}`}
+                                className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+                              >
+                                <Phone className="h-4 w-4" />
+                                {selectedProperty.profiles.phone}
+                              </a>
+                            ) : (
+                              <button
+                                onClick={() => setShowSubModal(true)}
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-700 hover:bg-amber-100 transition-colors w-full"
+                              >
+                                <Lock className="h-3.5 w-3.5 shrink-0" />
+                                <span className="text-left">Voir le numéro — Abonnement requis</span>
+                              </button>
+                            )}
                           </div>
                         )}
                         {selectedProperty.profiles?.email && (
@@ -995,6 +1028,15 @@ const Properties = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <SubscriptionModal
+        isOpen={showSubModal}
+        onClose={() => setShowSubModal(false)}
+        onSuccess={() => {
+          setShowSubModal(false);
+          refetchSub();
+        }}
+      />
     </Layout>
   );
 };

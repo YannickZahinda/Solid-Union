@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/select";
 import {
   Search,
-  Filter,
   MapPin,
   Eye,
   Heart,
@@ -27,6 +26,7 @@ import {
   Send,
   X,
   Check,
+  Lock,
 } from "lucide-react";
 import { supabase } from "@/services/supabase";
 import { toast } from "@/components/ui/use-toast";
@@ -40,12 +40,15 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { useSubscription } from "@/hooks/useSubscription";
+import SubscriptionModal from "@/components/subscription/SubscriptionModal";
 
 interface Product {
   id: string;
   title: string;
   description: string;
   price: number;
+  is_offered: boolean;
   location: string;
   images: string[];
   stock: number;
@@ -88,6 +91,9 @@ const Products = () => {
   const [messageContent, setMessageContent] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [showOfferedOnly, setShowOfferedOnly] = useState(false);
+  const [showSubModal, setShowSubModal] = useState(false);
+  const { isSubscribed, refetch: refetchSub } = useSubscription();
 
   const priceRanges = [
     { label: "Tous les prix", value: "any" },
@@ -249,7 +255,9 @@ const Products = () => {
       }
     }
 
-    return matchesSearch && matchesCategory && matchesPrice;
+    const matchesOffered = !showOfferedOnly || product.is_offered === true;
+
+    return matchesSearch && matchesCategory && matchesPrice && matchesOffered;
   });
 
   const formatDate = (dateString: string) => {
@@ -391,6 +399,20 @@ const Products = () => {
                 </SelectContent>
               </Select>
             </div>
+            <div className="mt-4 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowOfferedOnly((v) => !v)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 text-sm font-medium transition-all ${
+                  showOfferedOnly
+                    ? "border-green-500 bg-green-50 text-green-700"
+                    : "border-muted bg-background text-muted-foreground hover:border-green-400"
+                }`}
+              >
+                🎁{" "}
+                {showOfferedOnly ? "Dons uniquement ✓" : "Voir les dons gratuits"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -458,11 +480,15 @@ const Products = () => {
                         }`}
                       />
                     </button>
-                    {product.negotiable && (
+                    {product.is_offered ? (
+                      <Badge className="absolute top-2 left-2 bg-green-500 text-white">
+                        🎁 Offert
+                      </Badge>
+                    ) : product.negotiable ? (
                       <Badge className="absolute top-2 left-2 bg-secondary text-secondary-foreground">
                         Prix Négociable
                       </Badge>
-                    )}
+                    ) : null}
                   </div>
 
                   <CardContent className="p-6">
@@ -471,9 +497,15 @@ const Products = () => {
                         {product.title}
                       </h3>
                       <div className="flex flex-col items-end">
-                        <span className="text-xl font-bold text-secondary">
-                          {formatPrice(product.price)}
-                        </span>
+                        {product.is_offered ? (
+                          <span className="text-xl font-bold text-green-600">
+                            GRATUIT
+                          </span>
+                        ) : (
+                          <span className="text-xl font-bold text-secondary">
+                            {formatPrice(product.price)}
+                          </span>
+                        )}
                         {product.stock > 0 && (
                           <span className="text-xs text-muted-foreground">
                             {product.stock} en stock
@@ -695,9 +727,26 @@ const Products = () => {
                         </div>
                       </div>
                       {selectedProduct.seller.phone && (
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Phone className="h-3 w-3 mr-1" />
-                          {selectedProduct.seller.phone}
+                        <div className="mt-2">
+                          {isSubscribed ? (
+                            <a
+                              href={`tel:${selectedProduct.seller.phone}`}
+                              className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+                            >
+                              <Phone className="h-4 w-4" />
+                              {selectedProduct.seller.phone}
+                            </a>
+                          ) : (
+                            <button
+                              onClick={() => setShowSubModal(true)}
+                              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-700 hover:bg-amber-100 transition-colors w-full"
+                            >
+                              <Lock className="h-3.5 w-3.5 shrink-0" />
+                              <span className="flex-1 text-left">
+                                Voir le numéro — Abonnement requis
+                              </span>
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
@@ -806,6 +855,15 @@ const Products = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <SubscriptionModal
+        isOpen={showSubModal}
+        onClose={() => setShowSubModal(false)}
+        onSuccess={() => {
+          setShowSubModal(false);
+          refetchSub();
+        }}
+      />
     </Layout>
   );
 };

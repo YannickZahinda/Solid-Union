@@ -91,6 +91,7 @@ interface ListingFormData {
   tags: string[];
   contact_phone?: string;
   contact_email?: string;
+  is_offered?: boolean;
 
   // Champs produits
   stock?: string;
@@ -184,6 +185,7 @@ const CreerAnnonce = () => {
     tags: [],
     contact_phone: "",
     contact_email: "",
+    is_offered: false,
 
     // Produits
     stock: "1",
@@ -420,9 +422,10 @@ const CreerAnnonce = () => {
       if (listingType === "product") {
         const productData = {
           ...baseData,
-          price: parseFloat(formData.price),
+          price: formData.is_offered ? 0 : parseFloat(formData.price),
+          is_offered: formData.is_offered || false,
           stock: parseInt(formData.stock || "1"),
-          negotiable: formData.negotiable || false,
+          negotiable: formData.is_offered ? false : (formData.negotiable || false),
           condition: formData.condition || "new",
           brand: formData.brand || null,
           model: formData.model || null,
@@ -432,13 +435,16 @@ const CreerAnnonce = () => {
         const { error } = await supabase.from("products").insert([productData]);
         if (error) throw error;
         toast({
-          title: "✅ Produit publié !",
-          description: "Votre produit a été publié avec succès.",
+          title: formData.is_offered ? "🎁 Don publié !" : "✅ Produit publié !",
+          description: formData.is_offered
+            ? "Votre offre de don a été publiée avec succès."
+            : "Votre produit a été publié avec succès.",
         });
       } else if (listingType === "property") {
         const propertyData = {
           ...baseData,
-          price: parseFloat(formData.price),
+          price: formData.is_offered ? 0 : parseFloat(formData.price),
+          is_offered: formData.is_offered || false,
           bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
           bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : null,
           area_sqft: formData.area_sqft ? parseFloat(formData.area_sqft) : null,
@@ -459,8 +465,10 @@ const CreerAnnonce = () => {
           .insert([propertyData]);
         if (error) throw error;
         toast({
-          title: "🏠 Propriété publiée !",
-          description: "Votre propriété a été publiée avec succès.",
+          title: formData.is_offered ? "🎁 Propriété offerte publiée !" : "🏠 Propriété publiée !",
+          description: formData.is_offered
+            ? "Votre offre de propriété a été publiée avec succès."
+            : "Votre propriété a été publiée avec succès.",
         });
       } else if (listingType === "job") {
         const jobData = {
@@ -588,6 +596,7 @@ const CreerAnnonce = () => {
     if (!formData.title.trim()) return false;
     if (!formData.description.trim()) return false;
     if (
+      !formData.is_offered &&
       listingType !== "event" &&
       (!formData.price || parseFloat(formData.price) <= 0)
     )
@@ -739,46 +748,111 @@ const CreerAnnonce = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Objectif de l'annonce — produits et propriétés uniquement */}
+              {(listingType === "product" || listingType === "property") && (
                 <div className="space-y-2">
-                  <Label htmlFor="price">Prix *</Label>
-                  <div className="relative">
-                    <Input
-                      id="price"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.price}
-                      onChange={(e) =>
+                  <Label className="text-base font-semibold">
+                    Objectif de l'annonce
+                  </Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => ({ ...prev, is_offered: false }))
+                      }
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${
+                        !formData.is_offered
+                          ? "border-primary bg-primary/5 shadow-sm"
+                          : "border-muted hover:border-primary/40"
+                      }`}
+                    >
+                      <div className="font-semibold text-sm">
+                        💰 Vendre / Louer
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Définir un prix de vente ou de location
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
                         setFormData((prev) => ({
                           ...prev,
-                          price: e.target.value,
+                          is_offered: true,
+                          price: "0",
+                          negotiable: false,
                         }))
                       }
-                      placeholder="0.00"
-                      required={listingType !== "event"}
-                      className="pl-7"
-                    />
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                      €
-                    </span>
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${
+                        formData.is_offered
+                          ? "border-green-500 bg-green-50 shadow-sm"
+                          : "border-muted hover:border-green-400"
+                      }`}
+                    >
+                      <div className="font-semibold text-sm text-green-700">
+                        🎁 Offrir gratuitement
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Don, cadeau ou échange sans argent
+                      </div>
+                    </button>
                   </div>
-                  {listingType === "property" && (
-                    <p className="text-xs text-muted-foreground">
-                      Prix de vente ou loyer mensuel
-                    </p>
-                  )}
-                  {listingType === "service" && (
-                    <p className="text-xs text-muted-foreground">
-                      Tarif de base pour votre service
-                    </p>
-                  )}
-                  {listingType === "event" && (
-                    <p className="text-xs text-muted-foreground">
-                      Prix d'entrée (0 = gratuit)
-                    </p>
-                  )}
                 </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {formData.is_offered &&
+                (listingType === "product" || listingType === "property") ? (
+                  <div className="space-y-2">
+                    <Label>Prix</Label>
+                    <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg border border-green-200 h-10">
+                      <Gift className="h-4 w-4 text-green-600 shrink-0" />
+                      <span className="text-green-700 font-semibold text-sm">
+                        Offert gratuitement
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="price">Prix *</Label>
+                    <div className="relative">
+                      <Input
+                        id="price"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={formData.price}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            price: e.target.value,
+                          }))
+                        }
+                        placeholder="0.00"
+                        required={listingType !== "event"}
+                        className="pl-7"
+                      />
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                        $
+                      </span>
+                    </div>
+                    {listingType === "property" && (
+                      <p className="text-xs text-muted-foreground">
+                        Prix de vente ou loyer mensuel
+                      </p>
+                    )}
+                    {listingType === "service" && (
+                      <p className="text-xs text-muted-foreground">
+                        Tarif de base pour votre service
+                      </p>
+                    )}
+                    {listingType === "event" && (
+                      <p className="text-xs text-muted-foreground">
+                        Prix d'entrée (0 = gratuit)
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label htmlFor="location">Localisation *</Label>
