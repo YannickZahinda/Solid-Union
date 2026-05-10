@@ -671,7 +671,7 @@ const Header = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="relative hidden sm:flex"
+                    className="relative hidden md:flex"
                   >
                     <MessageSquare className="h-4 w-4" />
                     {unreadMessages > 0 && (
@@ -1088,18 +1088,6 @@ const Header = () => {
                         </Button>
                       </Link>
                       <Link
-                        to="/create-listing"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start"
-                        >
-                          <PlusCircle className="mr-2 h-4 w-4" />
-                          Créer une annonce
-                        </Button>
-                      </Link>
-                      <Link
                         to="/my-listings"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
@@ -1109,23 +1097,6 @@ const Header = () => {
                         >
                           <Package className="mr-2 h-4 w-4" />
                           Mes annonces
-                        </Button>
-                      </Link>
-                      <Link
-                        to="/messages"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start relative"
-                        >
-                          <MessageSquare className="mr-2 h-4 w-4" />
-                          Messages
-                          {unreadMessages > 0 && (
-                            <Badge className="ml-auto bg-red-500 text-white">
-                              {unreadMessages}
-                            </Badge>
-                          )}
                         </Button>
                       </Link>
                     </div>
